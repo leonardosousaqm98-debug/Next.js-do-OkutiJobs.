@@ -134,8 +134,8 @@
 - [x] Auditar a homepage publicada da nova aplicação; o domínio Vercel apresenta a interface Next.js correcta com navegação, pesquisa, vagas, soluções e área pessoal.
 - [x] Refinar a hierarquia da homepage: proposta de valor, pesquisa de vagas, serviços, formações, parceiros e CTA.
 - [x] Corrigir links e CTAs da homepage para conduzirem a páginas reais da nova aplicação, incluindo detalhes de vagas, perfil, revisão de CV, Banco de Talentos e propostas empresariais.
-- [ ] Melhorar responsividade, escala visual e consistência do header/footer da homepage.
-- [ ] Validar a homepage nova com testes, typecheck, build e revisão visual desktop/mobile.
+- [x] Melhorar responsividade, escala visual e consistência do header/footer da homepage; breakpoints desktop/mobile e controlos de escala existentes foram verificados.
+- [x] Validar a homepage nova com testes, typecheck, build e revisão visual desktop/mobile; 41 testes, TypeScript sem erros e build com 30 rotas.
 
 ## Escolha inicial de utilizador na homepage
 
