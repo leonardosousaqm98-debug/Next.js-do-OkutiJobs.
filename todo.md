@@ -101,3 +101,4 @@
 - [x] Substituir no cabeçalho os links “Para candidatos” e “Para empresas” por “Comprar CV” e “Apoio à candidatura”.
 - [x] Criar a entrada “Serviços” com acesso a todos os serviços destinados a candidatos.
 - [x] Aplicar a navegação actualizada no cabeçalho público, no catálogo e no portal autenticado.
+- [x] Garantir que Comprar CV, Apoio à candidatura e Serviços também ficam acessíveis no cabeçalho mobile sem overflow horizontal através do menu Menu.

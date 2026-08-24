@@ -15,6 +15,8 @@ describe("candidate-focused navigation", () => {
     expect(source).toContain('Revisão de CV por IA');
     expect(source).toContain('Oportunidades compatíveis');
     expect(source).toContain('Formações de carreira');
+    expect(source).toContain('className="mobile-nav-dropdown"');
+    expect(source).toContain('aria-label="Abrir menu"');
   });
 
   it("does not expose the retired audience links in the shared header", () => {
