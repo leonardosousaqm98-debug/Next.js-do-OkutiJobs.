@@ -143,3 +143,10 @@
 - [x] Persistir a escolha localmente e manter a opção de explorar sem seleccionar um perfil; o fecho/limpeza do armazenamento permite reabrir a escolha.
 - [x] Ligar cada escolha aos percursos correctos de candidato e empresa, com foco de teclado, semântica de diálogo e layout responsivo.
 - [x] Validar a alteração com 41 testes, TypeScript e build de 30 rotas; sincronização na branch `main` pendente neste passo.
+
+## Redesign da página de candidatos
+
+- [x] Reformular o hero com copy mais inspiradora e três CTAs rápidos: Encontrar vagas, Formações e Plano de carreira.
+- [x] Apresentar serviços para candidatos em blocos visuais mais dinâmicos e divertidos.
+- [x] Substituir a grelha extensa de cursos por categorias de formação e botão “Ver catálogo completo”.
+- [x] Validar responsividade, links, testes e build da página de candidatos; 43 testes aprovados, TypeScript sem erros e build de 30 rotas.
