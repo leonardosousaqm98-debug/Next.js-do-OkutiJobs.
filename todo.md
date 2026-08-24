@@ -197,12 +197,31 @@
 
 ## Detalhe de vagas e candidatura
 
-- [ ] Mostrar descrição completa, funções, requisitos e factos da vaga ao abrir uma oportunidade.
-- [ ] Encaminhar o botão “Enviar candidatura” para o login com retorno à vaga seleccionada.
-- [ ] Validar navegação, conteúdo, testes e build do fluxo Encontrar vagas.
+- [x] Mostrar descrição completa, funções, requisitos e factos da vaga ao abrir uma oportunidade.
+- [x] Encaminhar o botão “Enviar candidatura” para o login com retorno à vaga seleccionada; a confirmação de perfil fica fora do fluxo público.
+- [x] Validar navegação, conteúdo, testes e build do fluxo Encontrar vagas.
 
 ## Voltar em todas as páginas
 
 - [x] Auditar páginas com headers próprios que ainda não usam o botão Voltar partilhado.
 - [x] Integrar o botão Voltar globalmente no layout raiz; aparece em todas as rotas internas e fica oculto apenas na homepage inicial.
 - [x] Validar acessibilidade, fallback, testes e build; 47 testes aprovados, TypeScript sem erros e build de 30 rotas.
+
+## Pesquisa avançada de vagas
+
+- [x] Criar filtros por texto, categoria, província, modelo de trabalho, contrato, senioridade e intervalo salarial AOA.
+- [x] Sincronizar filtros, ordenação e paginação com query params partilháveis, usando `use-debounce` na busca global.
+- [x] Implementar ordenação, consulta Supabase paginada em `/api/jobs` e botão Limpar Filtros.
+- [x] Criar drawer de filtros para mobile, detalhe completo da vaga e retorno ao login antes da candidatura.
+- [x] Validar acessibilidade, segurança, performance, testes e build; 51 testes aprovados, TypeScript sem erros e build de 31 rotas.
+
+## Confirmação de candidatura
+
+- [x] Remover a confirmação de perfil actualizado do fluxo público sem sessão.
+- [x] Encaminhar o CTA público directamente para login; a confirmação permanece disponível apenas no formulário autenticado.
+- [x] Validar o fluxo público, login, confirmação e envio da candidatura; 51 testes e build de 31 rotas aprovados.
+
+## Fundo de escritório da mascote
+
+- [ ] Criar versão da mascote com ambiente de escritório moderno e coerente com OkutiJobs.
+- [ ] Integrar a nova imagem no hero e validar composição responsiva.

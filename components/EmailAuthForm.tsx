@@ -7,7 +7,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 type Mode = "login" | "signup";
 type AccountType = "candidate" | "company";
 
-export function EmailAuthForm() {
+export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [accountType, setAccountType] = useState<AccountType>("candidate");
@@ -66,7 +66,8 @@ export function EmailAuthForm() {
       setMessage("Conta criada. Confirme o seu email antes de iniciar sessão.");
       return;
     }
-    router.push(mode === "signup" ? (accountType === "company" ? "/empresa" : "/candidato") : "/dashboard");
+    const fallbackPath = mode === "signup" ? (accountType === "company" ? "/empresa" : "/candidato") : "/dashboard";
+    router.push(nextPath || fallbackPath);
     router.refresh();
   }
 
