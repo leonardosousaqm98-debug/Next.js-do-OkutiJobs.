@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { HomeSearch } from "@/components/HomeSearch";
 import { SiteHeader } from "@/components/SiteHeader";
+import { AudienceChoiceModal } from "@/components/AudienceChoiceModal";
 
 const services = [
   { number: "01", title: "Recrutamento especializado", text: "Encontramos profissionais alinhados com a cultura, a função e o momento de crescimento da sua organização.", href: "/pagina-empresas?servico=recrutamento" },
@@ -35,6 +36,7 @@ export default async function HomePage() {
   }
 
   return <main>
+    <AudienceChoiceModal />
     <SiteHeader signedIn={Boolean(data.user)} />
     <section className="hero-section"><div className="hero-copy"><p className="eyebrow">Talento angolano. Oportunidades sem fronteiras.</p><h1>O próximo passo da sua carreira <em>começa aqui.</em></h1><p className="hero-lede">Ligamos pessoas ambiciosas a organizações que querem crescer melhor — com tecnologia, contexto e acompanhamento humano.</p><div className="hero-actions"><a className="button button-orange" href="#vagas">Explorar oportunidades <span>↗</span></a><a className="text-link" href="#empresas">Sou uma empresa <span>→</span></a></div><div className="hero-proof"><div className="avatar-stack"><i>LM</i><i>AS</i><i>JC</i><b>+</b></div><span>Profissionais a construir o próximo capítulo.</span></div></div><div className="hero-art" aria-hidden="true"><div className="art-orbit orbit-one"></div><div className="art-orbit orbit-two"></div><div className="art-disc"><span>O</span></div><div className="art-note note-top">Competência<br /><strong>encontra</strong><br />oportunidade.</div><div className="art-note note-bottom">AI-powered<br /><strong>matching</strong></div><div className="art-spark">✦</div></div></section>
     <section className="search-strip" id="vagas"><div><p className="eyebrow">Encontre o seu lugar</p><h2>Uma oportunidade pode mudar tudo.</h2></div><HomeSearch opportunities={opportunities} /></section>

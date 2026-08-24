@@ -136,3 +136,10 @@
 - [x] Corrigir links e CTAs da homepage para conduzirem a páginas reais da nova aplicação, incluindo detalhes de vagas, perfil, revisão de CV, Banco de Talentos e propostas empresariais.
 - [ ] Melhorar responsividade, escala visual e consistência do header/footer da homepage.
 - [ ] Validar a homepage nova com testes, typecheck, build e revisão visual desktop/mobile.
+
+## Escolha inicial de utilizador na homepage
+
+- [x] Mostrar no primeiro acesso um modal de escolha entre Candidato e Empresa na nova homepage.
+- [x] Persistir a escolha localmente e manter a opção de explorar sem seleccionar um perfil; o fecho/limpeza do armazenamento permite reabrir a escolha.
+- [x] Ligar cada escolha aos percursos correctos de candidato e empresa, com foco de teclado, semântica de diálogo e layout responsivo.
+- [x] Validar a alteração com 41 testes, TypeScript e build de 30 rotas; sincronização na branch `main` pendente neste passo.
