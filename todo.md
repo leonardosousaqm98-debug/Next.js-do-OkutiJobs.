@@ -164,3 +164,9 @@
 ## Ajuste de copy da homepage
 
 - [x] Remover a frase “Talento angolano. Oportunidades sem fronteiras.” da nova homepage; o título e restante hero foram preservados. Validação: 44 testes, TypeScript e build de 30 rotas.
+
+## Imagem ou mascote da homepage
+
+- [x] Localizar e avaliar a imagem usada na homepage antiga; como não havia asset reutilizável no código, foi criada uma mascote original alinhada com a marca OkutiJobs.
+- [x] Integrar a mascote no lado direito do hero da homepage nova, com texto alternativo e regras responsivas desktop/mobile.
+- [x] Validar o visual, testes, build e sincronização da alteração; 45 testes aprovados, TypeScript sem erros e build de 30 rotas.

@@ -19,6 +19,11 @@ describe("OkutiJobs public discovery and company analytics", () => {
     expect(catalog).toContain("requirements-list");
   });
 
+  it("renders the OkutiJobs mascot in the homepage hero", () => {
+    expect(home).toContain("okutijobs-career-mascot_c3608e5a.png");
+    expect(home).toContain("Mascote OkutiJobs a dar as boas-vindas aos profissionais");
+  });
+
   it("removes the requested homepage eyebrow without changing the hero", () => {
     expect(home).not.toContain("Talento angolano. Oportunidades sem fronteiras.");
     expect(home).toContain("O próximo passo da sua carreira");
