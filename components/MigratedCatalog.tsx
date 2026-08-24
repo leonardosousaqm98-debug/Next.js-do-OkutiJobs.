@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SiteHeader } from "@/components/SiteHeader";
 import { useMemo, useState } from "react";
 
 export type Job = { id: string; slug?: string; title: string; company: string; place: string; mode: string; area: string; contract: string; salaryKz?: number | null; experienceYears?: number | null; description?: string; requirements?: string | null };
@@ -17,7 +18,7 @@ const courses: Course[] = [
   { title: "Literacia digital e produtividade", area: "Escritório", level: "Fundamentos", mode: "Online", duration: "6 horas" },
 ];
 
-function Header() { return <header className="site-header"><Link href="/" className="brand" aria-label="OkutiJobs — início"><span className="brand-lockup"><span className="brand-symbol"><img src="https://wmkxeqghopmbsfwptpzq.supabase.co/storage/v1/object/public/brand-assets/okutijobs-new-mark.png" alt="" /></span><span className="brand-word">Okuti<span>Jobs</span></span></span></Link><nav className="desktop-nav" aria-label="Navegação principal"><Link href="/vagas">Encontrar vagas</Link><Link href="/pagina-empresas">Para empresas</Link><Link href="/pagina-candidatos">Para profissionais</Link><Link href="/formacoes">Formações</Link></nav><div className="header-actions"><Link className="header-login" href="/login">Iniciar sessão</Link><Link className="button button-dark header-cta" href="/login">Criar conta <span>↗</span></Link></div></header>; }
+function Header() { return <SiteHeader />; }
 
 export function ApplicationModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const [confirmed, setConfirmed] = useState(false); const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle"); const [message, setMessage] = useState("");

@@ -95,3 +95,9 @@
 - [ ] Tornar visível e funcional o painel autenticado do candidato.
 - [ ] Recuperar gestão de vagas favoritas, candidaturas e conclusão de perfil/CV.
 - [ ] Melhorar a apresentação pública e a navegação para não parecer uma versão incompleta do site.
+
+## Navegação orientada a candidatos
+
+- [x] Substituir no cabeçalho os links “Para candidatos” e “Para empresas” por “Comprar CV” e “Apoio à candidatura”.
+- [x] Criar a entrada “Serviços” com acesso a todos os serviços destinados a candidatos.
+- [x] Aplicar a navegação actualizada no cabeçalho público, no catálogo e no portal autenticado.
