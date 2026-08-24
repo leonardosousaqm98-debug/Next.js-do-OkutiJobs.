@@ -188,3 +188,9 @@
 - [x] Adicionar animação suave de flutuação à mascote da homepage respeitando `prefers-reduced-motion`.
 - [x] Melhorar hover/focus/active states dos botões da homepage e do botão Voltar.
 - [x] Validar responsividade, acessibilidade, testes e build; 47 testes aprovados, TypeScript sem erros e build de 30 rotas.
+
+## Ajuste visual do hero
+
+- [x] Remover o elemento escuro/transparente em torno da mascote; o disco visual foi retirado do hero.
+- [x] Remover o texto “AI-powered matching” do hero.
+- [x] Validar a homepage, testes e build após o ajuste; 47 testes aprovados, TypeScript sem erros e build de 30 rotas.

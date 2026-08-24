@@ -31,6 +31,9 @@ describe("OkutiJobs public discovery and company analytics", () => {
     expect(home).toContain("https://files.manuscdn.com/user_upload_by_module/session_file/310519663127095791/qkjkVaySjHwaQTnj.png");
     expect(home).toContain("Mascote OkutiJobs a dar as boas-vindas aos profissionais");
     expect(home).toContain("hero-mascot");
+    expect(home).not.toContain("art-disc");
+    expect(home).not.toContain("AI-powered");
+    expect(home).not.toContain("matching</strong>");
   });
 
   it("removes the requested homepage eyebrow without changing the hero", () => {
