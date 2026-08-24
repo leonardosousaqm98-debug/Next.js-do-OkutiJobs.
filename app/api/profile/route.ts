@@ -65,11 +65,15 @@ export async function POST(request: Request) {
     visibility: allowedVisibility.has(String(body.visibility)) ? String(body.visibility) : "private",
     certifications: cleanList(body.certifications),
     languages: cleanList(body.languages),
+    experience: cleanList(body.experience, 12),
+    education: cleanList(body.education, 12),
+    skills: cleanList(body.skills, 30),
+    portfolio_url: cleanText(body.portfolioUrl, 300),
     profile_completeness: 0,
     updated_at: new Date().toISOString(),
   };
 
-  const completenessFields = [candidateData.headline, candidateData.bio, candidateData.country, candidateData.province, candidateData.city, candidateData.current_title, candidateData.academic_level, candidateData.study_field, candidateData.preferred_work_mode, candidateData.contract_type, candidateData.availability, candidateData.certifications.length > 0, candidateData.languages.length > 0];
+  const completenessFields = [candidateData.headline, candidateData.bio, candidateData.country, candidateData.province, candidateData.city, candidateData.current_title, candidateData.academic_level, candidateData.study_field, candidateData.preferred_work_mode, candidateData.contract_type, candidateData.availability, candidateData.certifications.length > 0, candidateData.languages.length > 0, candidateData.experience.length > 0, candidateData.education.length > 0, candidateData.skills.length > 0];
   candidateData.profile_completeness = Math.round((completenessFields.filter(Boolean).length / completenessFields.length) * 100);
 
   const { error: profileError } = await supabase.from("profiles").upsert({ id: authData.user.id, full_name: fullName, account_type: "candidate", preferred_language: preferredLanguage, updated_at: new Date().toISOString() });
