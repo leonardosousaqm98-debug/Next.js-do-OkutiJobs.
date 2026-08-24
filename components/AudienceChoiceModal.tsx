@@ -10,11 +10,9 @@ export function AudienceChoiceModal() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    try {
-      setOpen(window.localStorage.getItem(STORAGE_KEY) === null);
-    } catch {
-      setOpen(true);
-    }
+    // The homepage is the entry point and must ask the visitor every time.
+    // The choice is stored only as a preference, never as a reason to hide the modal.
+    setOpen(true);
   }, []);
 
   function choose(audience: Audience) {

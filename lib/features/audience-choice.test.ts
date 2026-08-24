@@ -10,6 +10,8 @@ describe("escolha inicial de utilizador", () => {
     expect(modal).toContain("Sou empregador / empresa");
     expect(modal).toContain("Apenas visitar e explorar a plataforma");
     expect(modal).toContain("okutijobs-audience-choice");
+    expect(modal).toContain("setOpen(true);");
+    expect(modal).toContain("never as a reason to hide the modal");
   });
 
   it("é montada na homepage nova", () => {

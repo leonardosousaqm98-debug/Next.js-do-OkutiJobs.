@@ -142,7 +142,7 @@
 - [x] Mostrar no primeiro acesso um modal de escolha entre Candidato e Empresa na nova homepage.
 - [x] Persistir a escolha localmente e manter a opção de explorar sem seleccionar um perfil; o fecho/limpeza do armazenamento permite reabrir a escolha.
 - [x] Ligar cada escolha aos percursos correctos de candidato e empresa, com foco de teclado, semântica de diálogo e layout responsivo.
-- [x] Validar a alteração com 41 testes, TypeScript e build de 30 rotas; sincronização na branch `main` pendente neste passo.
+- [x] Validar a alteração com 43 testes, TypeScript e build de 30 rotas; código sincronizado na branch `main`.
 
 ## Redesign da página de candidatos
 
@@ -150,3 +150,8 @@
 - [x] Apresentar serviços para candidatos em blocos visuais mais dinâmicos e divertidos.
 - [x] Substituir a grelha extensa de cursos por categorias de formação e botão “Ver catálogo completo”.
 - [x] Validar responsividade, links, testes e build da página de candidatos; 43 testes aprovados, TypeScript sem erros e build de 30 rotas.
+
+## Comportamento do link inicial
+
+- [x] Fazer o link inicial mostrar sempre a escolha Candidato/Empresa, sem depender de uma escolha guardada no navegador.
+- [x] Manter a opção “Apenas visitar e explorar” e validar os percursos após acessos repetidos.
