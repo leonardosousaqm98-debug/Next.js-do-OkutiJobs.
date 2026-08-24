@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { BackButton } from "@/components/BackButton";
 
 type SiteHeaderProps = {
   signedIn?: boolean;
@@ -22,7 +21,6 @@ export function SiteHeader({ signedIn = false, accountHref = "/dashboard" }: Sit
           <span className="brand-word">Okuti<span>Jobs</span></span>
         </span>
       </Link>
-      <BackButton />
       <nav className="desktop-nav" aria-label="Navegação principal">
         <Link href="/vagas">Encontrar vagas</Link>
         <Link href="/revisao-cv">Comprar CV</Link>

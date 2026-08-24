@@ -194,3 +194,15 @@
 - [x] Remover o elemento escuro/transparente em torno da mascote; o disco visual foi retirado do hero.
 - [x] Remover o texto “AI-powered matching” do hero.
 - [x] Validar a homepage, testes e build após o ajuste; 47 testes aprovados, TypeScript sem erros e build de 30 rotas.
+
+## Detalhe de vagas e candidatura
+
+- [ ] Mostrar descrição completa, funções, requisitos e factos da vaga ao abrir uma oportunidade.
+- [ ] Encaminhar o botão “Enviar candidatura” para o login com retorno à vaga seleccionada.
+- [ ] Validar navegação, conteúdo, testes e build do fluxo Encontrar vagas.
+
+## Voltar em todas as páginas
+
+- [x] Auditar páginas com headers próprios que ainda não usam o botão Voltar partilhado.
+- [x] Integrar o botão Voltar globalmente no layout raiz; aparece em todas as rotas internas e fica oculto apenas na homepage inicial.
+- [x] Validar acessibilidade, fallback, testes e build; 47 testes aprovados, TypeScript sem erros e build de 30 rotas.

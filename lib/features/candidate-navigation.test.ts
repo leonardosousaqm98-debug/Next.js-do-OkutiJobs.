@@ -27,7 +27,8 @@ describe("candidate-focused navigation", () => {
   });
 
   it("provides a back button with history and homepage fallback", () => {
-    expect(read("components/SiteHeader.tsx")).toContain("<BackButton />");
+    expect(read("app/layout.tsx")).toContain("<BackButton />");
+    expect(read("components/SiteHeader.tsx")).not.toContain("<BackButton />");
     const backButton = read("components/BackButton.tsx");
     expect(backButton).toContain("router.back()");
     expect(backButton).toContain('router.push("/")');
