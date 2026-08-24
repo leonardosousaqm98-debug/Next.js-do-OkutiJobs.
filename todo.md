@@ -131,8 +131,8 @@
 
 ## Homepage da nova versão Next.js
 
-- [ ] Auditar a homepage publicada da nova aplicação e confirmar que o deployment aponta para o código Next.js correcto.
-- [ ] Refinar a hierarquia da homepage: proposta de valor, pesquisa de vagas, serviços, formações, parceiros e CTA.
-- [ ] Corrigir links e CTAs da homepage para conduzirem a páginas reais da nova aplicação.
+- [x] Auditar a homepage publicada da nova aplicação; o domínio Vercel apresenta a interface Next.js correcta com navegação, pesquisa, vagas, soluções e área pessoal.
+- [x] Refinar a hierarquia da homepage: proposta de valor, pesquisa de vagas, serviços, formações, parceiros e CTA.
+- [x] Corrigir links e CTAs da homepage para conduzirem a páginas reais da nova aplicação, incluindo detalhes de vagas, perfil, revisão de CV, Banco de Talentos e propostas empresariais.
 - [ ] Melhorar responsividade, escala visual e consistência do header/footer da homepage.
 - [ ] Validar a homepage nova com testes, typecheck, build e revisão visual desktop/mobile.
