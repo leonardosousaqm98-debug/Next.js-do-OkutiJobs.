@@ -10,9 +10,12 @@ export function AudienceChoiceModal() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // The homepage is the entry point and must ask the visitor every time.
-    // The choice is stored only as a preference, never as a reason to hide the modal.
-    setOpen(true);
+    // Ask on the first visit only; the selected route is remembered for this browser.
+    try {
+      setOpen(window.localStorage.getItem(STORAGE_KEY) === null);
+    } catch {
+      setOpen(true);
+    }
   }, []);
 
   function choose(audience: Audience) {

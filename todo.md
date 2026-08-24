@@ -155,3 +155,8 @@
 
 - [x] Fazer o link inicial mostrar sempre a escolha Candidato/Empresa, sem depender de uma escolha guardada no navegador.
 - [x] Manter a opção “Apenas visitar e explorar” e validar os percursos após acessos repetidos.
+
+## Correcção do teste inicial
+
+- [x] Restaurar o modal para aparecer apenas quando não existe escolha guardada no navegador.
+- [x] Validar que escolher Candidato ou Empresa oculta o modal em acessos seguintes e fornecer o link inicial para reiniciar o teste; validação concluída com 43 testes, TypeScript e build de 30 rotas.
