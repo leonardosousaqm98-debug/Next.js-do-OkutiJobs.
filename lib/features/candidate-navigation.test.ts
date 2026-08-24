@@ -26,6 +26,14 @@ describe("candidate-focused navigation", () => {
     expect(source).not.toContain('Para profissionais');
   });
 
+  it("provides a back button with history and homepage fallback", () => {
+    expect(read("components/SiteHeader.tsx")).toContain("<BackButton />");
+    const backButton = read("components/BackButton.tsx");
+    expect(backButton).toContain("router.back()");
+    expect(backButton).toContain('router.push("/")');
+    expect(backButton).toContain("Voltar à página anterior");
+  });
+
   it("uses the shared header on the homepage and public catalog", () => {
     expect(read("app/page.tsx")).toContain('<SiteHeader signedIn={Boolean(data.user)} />');
     expect(read("components/MigratedCatalog.tsx")).toContain('function Header() { return <SiteHeader />; }');

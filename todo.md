@@ -173,11 +173,18 @@
 
 ## Navegação Voltar
 
-- [ ] Criar botão Voltar reutilizável com histórico do navegador e fallback para `/`.
-- [ ] Integrar o botão nos layouts/páginas internas da nova aplicação, com acessibilidade e responsividade.
-- [ ] Validar navegação, testes e build.
+- [x] Criar botão Voltar reutilizável com histórico do navegador e fallback para `/`.
+- [x] Integrar o botão nos layouts/páginas internas da nova aplicação, com acessibilidade e responsividade.
+- [x] Validar navegação, testes e build.
 
 ## Correcção da mascote
 
 - [x] Corrigir o erro de carregamento da mascote na homepage: substituída a referência privada que devolvia 404 na Vercel por um URL CDN público com resposta HTTP 200.
 - [x] Validar homepage, acessibilidade, testes e build após a correcção; 45 testes aprovados, TypeScript sem erros e build de 30 rotas.
+
+## Página de empresas e microinterações
+
+- [x] Redesenhar a página de empresas com hero, blocos de serviços e destaques B2B modernos.
+- [x] Adicionar animação suave de flutuação à mascote da homepage respeitando `prefers-reduced-motion`.
+- [x] Melhorar hover/focus/active states dos botões da homepage e do botão Voltar.
+- [x] Validar responsividade, acessibilidade, testes e build; 47 testes aprovados, TypeScript sem erros e build de 30 rotas.

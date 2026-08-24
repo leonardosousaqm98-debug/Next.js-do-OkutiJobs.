@@ -19,9 +19,18 @@ describe("OkutiJobs public discovery and company analytics", () => {
     expect(catalog).toContain("requirements-list");
   });
 
+  it("renders the modern company services experience", () => {
+    expect(catalog).toContain("Soluções para organizações em movimento");
+    expect(catalog).toContain("company-service-grid");
+    expect(catalog).toContain("Recrutamento especializado");
+    expect(catalog).toContain("Avaliação e testes");
+    expect(catalog).toContain("Solicitar uma proposta");
+  });
+
   it("renders the OkutiJobs mascot in the homepage hero", () => {
     expect(home).toContain("https://files.manuscdn.com/user_upload_by_module/session_file/310519663127095791/qkjkVaySjHwaQTnj.png");
     expect(home).toContain("Mascote OkutiJobs a dar as boas-vindas aos profissionais");
+    expect(home).toContain("hero-mascot");
   });
 
   it("removes the requested homepage eyebrow without changing the hero", () => {
