@@ -102,3 +102,16 @@
 - [x] Criar a entrada “Serviços” com acesso a todos os serviços destinados a candidatos.
 - [x] Aplicar a navegação actualizada no cabeçalho público, no catálogo e no portal autenticado.
 - [x] Garantir que Comprar CV, Apoio à candidatura e Serviços também ficam acessíveis no cabeçalho mobile sem overflow horizontal através do menu Menu.
+
+## Auditoria de paridade React/Vite → Next.js
+
+- [x] Inventariar as funcionalidades do site React/Vite anterior e comparar com as rotas públicas e portais actuais.
+- [x] Classificar as lacunas como bloqueadoras P0, importantes P1 ou evolução P2 pós-lançamento.
+- [x] Identificar funcionalidades antigas que não devem ser mescladas antes do lançamento por dependerem de integrações ou dados ainda não preparados.
+
+## Perfil profissional internacional do candidato
+
+- [x] Transformar “Meu perfil” num perfil/CV completo com dados pessoais, resumo, experiência, formação, competências, idiomas, certificações e preferências profissionais.
+- [x] Persistir os campos do perfil no Supabase com acesso apenas ao próprio candidato e às candidaturas autorizadas, usando as colunas existentes e RLS.
+- [x] Integrar upload privado do CV e preparar o perfil para extracção assistida sem expor o documento; a extracção automática integral do PDF fica como etapa posterior.
+- [x] Adicionar pré-visualização de CV internacional, barra de completude e validação de preenchimento.
