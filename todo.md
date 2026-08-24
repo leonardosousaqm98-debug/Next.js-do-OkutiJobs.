@@ -67,3 +67,14 @@
 - [x] Fechar o escopo MVP: homepage, vagas, detalhe, candidatura, autenticação email/palavra-passe, CV privado, portal empresarial básico, Backoffice mínimo e privacidade.
 - [x] Adiar para pós-lançamento: IA avançada, LinkedIn SSO, traduções humanas completas, pagamentos/créditos reais, testes online completos, relatórios PDF e matching avançado.
 - [ ] Validar o fluxo mínimo no domínio Vercel antes da publicação definitiva.
+
+## Configuração Vercel — execução actual
+
+- [ ] Confirmar que o projecto Vercel `okutijobs` usa o repositório Next.js `leonardosousaqm98-debug/Next.js-do-OkutiJobs.` na branch `main`.
+- [ ] Configurar as variáveis Supabase e `NEXT_PUBLIC_APP_URL` no ambiente Preview, mantendo a service role exclusivamente server-side.
+- [ ] Validar o deployment Preview, as rotas públicas e o carregamento de CSS/chunks.
+
+## Bloqueador Vercel encontrado
+
+- [ ] Corrigir o projecto Vercel que está configurado com output directory `public`; usar framework Next.js e deixar o output directory vazio/automático.
+- [ ] Tornar o middleware Supabase tolerante a URL ausente ou malformada e adicionar teste de regressão para evitar 500 na homepage.
