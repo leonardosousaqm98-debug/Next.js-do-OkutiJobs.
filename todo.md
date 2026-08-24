@@ -223,5 +223,5 @@
 
 ## Fundo de escritório da mascote
 
-- [ ] Criar versão da mascote com ambiente de escritório moderno e coerente com OkutiJobs.
-- [ ] Integrar a nova imagem no hero e validar composição responsiva.
+- [x] Criar versão da mascote com ambiente de escritório moderno e coerente com OkutiJobs.
+- [x] Integrar a nova imagem no hero e validar composição responsiva; o asset persistente está referenciado no hero e mantém texto alternativo e animação acessível.
