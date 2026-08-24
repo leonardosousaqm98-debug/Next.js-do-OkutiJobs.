@@ -170,3 +170,14 @@
 - [x] Localizar e avaliar a imagem usada na homepage antiga; como não havia asset reutilizável no código, foi criada uma mascote original alinhada com a marca OkutiJobs.
 - [x] Integrar a mascote no lado direito do hero da homepage nova, com texto alternativo e regras responsivas desktop/mobile.
 - [x] Validar o visual, testes, build e sincronização da alteração; 45 testes aprovados, TypeScript sem erros e build de 30 rotas.
+
+## Navegação Voltar
+
+- [ ] Criar botão Voltar reutilizável com histórico do navegador e fallback para `/`.
+- [ ] Integrar o botão nos layouts/páginas internas da nova aplicação, com acessibilidade e responsividade.
+- [ ] Validar navegação, testes e build.
+
+## Correcção da mascote
+
+- [x] Corrigir o erro de carregamento da mascote na homepage: substituída a referência privada que devolvia 404 na Vercel por um URL CDN público com resposta HTTP 200.
+- [x] Validar homepage, acessibilidade, testes e build após a correcção; 45 testes aprovados, TypeScript sem erros e build de 30 rotas.

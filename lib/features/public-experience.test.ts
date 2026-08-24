@@ -20,7 +20,7 @@ describe("OkutiJobs public discovery and company analytics", () => {
   });
 
   it("renders the OkutiJobs mascot in the homepage hero", () => {
-    expect(home).toContain("okutijobs-career-mascot_c3608e5a.png");
+    expect(home).toContain("https://files.manuscdn.com/user_upload_by_module/session_file/310519663127095791/qkjkVaySjHwaQTnj.png");
     expect(home).toContain("Mascote OkutiJobs a dar as boas-vindas aos profissionais");
   });
 
