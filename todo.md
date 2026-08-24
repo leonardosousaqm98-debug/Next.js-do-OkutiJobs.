@@ -46,9 +46,9 @@
 
 ## Registo desta auditoria
 
-- [x] 26 testes Vitest aprovados.
+- [x] 39 testes Vitest aprovados na validação actual.
 - [x] TypeScript sem erros.
-- [x] Build Next.js de produção concluído com 27 rotas.
+- [x] Build Next.js de produção concluído com 30 rotas.
 - [x] Lint ESLint não-interactivo concluído.
 - [x] Preview validada após reinício limpo.
 
@@ -113,5 +113,26 @@
 
 - [x] Transformar “Meu perfil” num perfil/CV completo com dados pessoais, resumo, experiência, formação, competências, idiomas, certificações e preferências profissionais.
 - [x] Persistir os campos do perfil no Supabase com acesso apenas ao próprio candidato e às candidaturas autorizadas, usando as colunas existentes e RLS.
-- [x] Integrar upload privado do CV e preparar o perfil para extracção assistida sem expor o documento; a extracção automática integral do PDF fica como etapa posterior.
+- [x] Integrar upload privado do CV e extracção assistida de PDF através de endpoint server-side, com revisão do candidato antes de guardar os dados.
 - [x] Adicionar pré-visualização de CV internacional, barra de completude e validação de preenchimento.
+- [x] Aplicar manualmente no Supabase a migração aditiva `0002_candidate_cv_structured_fields.sql` para experiência, educação, competências e portfólio; validação local concluída com teste específico, TypeScript e build de produção.
+
+## Nova proposta — perfil modular, talento e ATS
+
+- [x] Reorganizar `/profile` em etapas: identidade/localização, preferências e remuneração, skills e histórico.
+- [x] Adicionar pretensão salarial com moeda AOA/USD e periodicidade; a conversão cambial automática fica fora desta fase para evitar valores desactualizados.
+- [x] Parametrizar cargo, província/região, senioridade e tags exactas de competências para pesquisa da Barra de Talentos.
+- [x] Criar validação server-side equivalente a schema e indicador dinâmico de Força do Perfil.
+- [x] Implementar filtros parametrizados por URL na Barra de Talentos, com acesso protegido para empresas autenticadas e perfis públicos.
+- [x] Implementar Match Score ATS explicável por competências, senioridade, localização, formação e orçamento salarial quando informado.
+- [x] Mostrar triagem de candidaturas com compatibilidade, pré-requisitos e alertas de orçamento, sem decisões automáticas finais.
+- [x] Criar testes unitários do perfil e cálculo de compatibilidade; a verificação de RLS existente continua aprovada.
+- [x] Executar no Supabase a migração `0003_candidate_matching_fields.sql` para activar os novos campos de cargo, senioridade, áreas funcionais e remuneração AOA/USD; API REST respondeu HTTP 200 na verificação.
+
+## Homepage da nova versão Next.js
+
+- [ ] Auditar a homepage publicada da nova aplicação e confirmar que o deployment aponta para o código Next.js correcto.
+- [ ] Refinar a hierarquia da homepage: proposta de valor, pesquisa de vagas, serviços, formações, parceiros e CTA.
+- [ ] Corrigir links e CTAs da homepage para conduzirem a páginas reais da nova aplicação.
+- [ ] Melhorar responsividade, escala visual e consistência do header/footer da homepage.
+- [ ] Validar a homepage nova com testes, typecheck, build e revisão visual desktop/mobile.

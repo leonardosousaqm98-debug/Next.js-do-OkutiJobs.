@@ -3,6 +3,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const allowedLanguages = new Set(["pt", "en", "fr", "ar"]);
 const allowedVisibility = new Set(["private", "public"]);
+const allowedCurrencies = new Set(["AOA", "USD"]);
+const allowedPeriods = new Set(["monthly", "annual", "hourly"]);
 
 function cleanText(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) || null : null;
@@ -38,7 +40,10 @@ export async function POST(request: Request) {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) return NextResponse.json({ error: "É necessário iniciar sessão." }, { status: 401 });
 
-  const body = (await request.json()) as Record<string, unknown>;
+  const body = await request.json().catch(() => ({}));
+  const requestedSalaryMin = Number(body.salaryMinAmount);
+  const requestedSalaryMax = Number(body.salaryMaxAmount);
+  if (Number.isFinite(requestedSalaryMin) && Number.isFinite(requestedSalaryMax) && requestedSalaryMax >= 0 && requestedSalaryMin >= 0 && requestedSalaryMax < requestedSalaryMin) return NextResponse.json({ error: "A pretensão máxima deve ser igual ou superior à mínima." }, { status: 400 });
   const fullName = cleanText(body.fullName, 120);
   const preferredLanguage = allowedLanguages.has(String(body.preferredLanguage ?? "")) ? String(body.preferredLanguage) : "pt";
   if (!fullName || fullName.length < 2) return NextResponse.json({ error: "Indique um nome válido." }, { status: 400 });
@@ -46,6 +51,9 @@ export async function POST(request: Request) {
   const candidateData = {
     id: authData.user.id,
     headline: cleanText(body.headline, 160),
+    desired_job_title: cleanText(body.desiredJobTitle, 120),
+    seniority_level: cleanText(body.seniorityLevel, 60),
+    functional_areas: cleanList(body.functionalAreas, 3),
     bio: cleanText(body.bio, 2000),
     country: cleanText(body.country, 80),
     province: cleanText(body.province, 80),
@@ -58,6 +66,10 @@ export async function POST(request: Request) {
     current_title: cleanText(body.currentTitle, 120),
     salary_min_kz: Number.isFinite(Number(body.salaryMinKz)) && Number(body.salaryMinKz) >= 0 ? Number(body.salaryMinKz) : null,
     salary_max_kz: Number.isFinite(Number(body.salaryMaxKz)) && Number(body.salaryMaxKz) >= 0 ? Number(body.salaryMaxKz) : null,
+    salary_currency: allowedCurrencies.has(String(body.salaryCurrency)) ? String(body.salaryCurrency) : "AOA",
+    salary_min_amount: Number.isFinite(Number(body.salaryMinAmount)) && Number(body.salaryMinAmount) >= 0 ? Number(body.salaryMinAmount) : null,
+    salary_max_amount: Number.isFinite(Number(body.salaryMaxAmount)) && Number(body.salaryMaxAmount) >= 0 ? Number(body.salaryMaxAmount) : null,
+    salary_period: allowedPeriods.has(String(body.salaryPeriod)) ? String(body.salaryPeriod) : "monthly",
     availability: cleanText(body.availability, 80),
     willing_to_relocate: Boolean(body.willingToRelocate),
     willing_to_travel: Boolean(body.willingToTravel),
@@ -73,7 +85,7 @@ export async function POST(request: Request) {
     updated_at: new Date().toISOString(),
   };
 
-  const completenessFields = [candidateData.headline, candidateData.bio, candidateData.country, candidateData.province, candidateData.city, candidateData.current_title, candidateData.academic_level, candidateData.study_field, candidateData.preferred_work_mode, candidateData.contract_type, candidateData.availability, candidateData.certifications.length > 0, candidateData.languages.length > 0, candidateData.experience.length > 0, candidateData.education.length > 0, candidateData.skills.length > 0];
+  const completenessFields = [candidateData.headline, candidateData.bio, candidateData.country, candidateData.province, candidateData.city, candidateData.current_title, candidateData.academic_level, candidateData.study_field, candidateData.preferred_work_mode, candidateData.contract_type, candidateData.availability, candidateData.desired_job_title, candidateData.seniority_level, candidateData.functional_areas.length > 0, candidateData.salary_min_amount !== null || candidateData.salary_max_amount !== null, candidateData.certifications.length > 0, candidateData.languages.length > 0, candidateData.experience.length > 0, candidateData.education.length > 0, candidateData.skills.length > 0];
   candidateData.profile_completeness = Math.round((completenessFields.filter(Boolean).length / completenessFields.length) * 100);
 
   const { error: profileError } = await supabase.from("profiles").upsert({ id: authData.user.id, full_name: fullName, account_type: "candidate", preferred_language: preferredLanguage, updated_at: new Date().toISOString() });
