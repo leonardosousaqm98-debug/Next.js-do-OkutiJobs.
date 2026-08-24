@@ -14,6 +14,9 @@ describe("advanced jobs search", () => {
     expect(filters).toContain("jobs-filter-toggle");
     expect(filters).toContain("salaryMin");
     expect(filters).toContain("salaryMax");
+    expect(filters).toContain("categoriaManual");
+    expect(filters).toContain("citiesByCountry");
+    expect(filters).toContain("updateCountry");
   });
 
   it("renders complete job details and paginated results", () => {
@@ -28,6 +31,9 @@ describe("advanced jobs search", () => {
     expect(api).toContain("ilike");
     expect(api).toContain("range(from");
     expect(api).toContain("count: \"exact\"");
+    expect(api).toContain("country");
+    expect(api).toContain("city");
+    expect(api).toContain("categoriaManual");
   });
 
   it("sends unauthenticated candidates to login from a job detail", () => {

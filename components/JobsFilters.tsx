@@ -2,12 +2,41 @@
 
 import { useDebouncedCallback } from "use-debounce";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type JobsFiltersProps = {
   areas: string[];
-  provinces: string[];
+  countries: string[];
+  citiesByCountry: Record<string, string[]>;
 };
+
+const functionalAreas = [
+  "Administração e Secretariado",
+  "Agricultura e Ambiente",
+  "Arquitectura e Design",
+  "Auditoria e Controlo",
+  "Banca e Seguros",
+  "Comercial e Vendas",
+  "Comunicação e Relações Públicas",
+  "Contabilidade e Finanças",
+  "Construção e Obras",
+  "Consultoria",
+  "Compras e Procurement",
+  "Customer Success e Atendimento",
+  "Desporto e Entretenimento",
+  "Engenharia e Manutenção",
+  "Farmácia e Saúde",
+  "Gestão e Direcção",
+  "Hotelaria e Restauração",
+  "Jurídica",
+  "Logística e Transportes",
+  "Marketing e Publicidade",
+  "Recursos Humanos",
+  "Tecnologia e IT",
+  "Telecomunicações",
+  "Turismo",
+  "Outras áreas",
+];
 
 const filterOptions = {
   workModel: ["Presencial", "Híbrido", "Remoto"],
@@ -15,16 +44,29 @@ const filterOptions = {
   seniority: ["Estágio / Júnior", "Pleno", "Sénior", "Direção / Executivo"],
 };
 
-export function JobsFilters({ areas, provinces }: JobsFiltersProps) {
+export function JobsFilters({ areas, countries, citiesByCountry }: JobsFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const params = new URLSearchParams(searchParams.toString());
+  const country = params.get("pais") ?? "";
+  const customArea = params.get("categoriaManual") ?? "";
+  const availableAreas = useMemo(() => Array.from(new Set([...functionalAreas, ...areas])).sort((a, b) => a.localeCompare(b, "pt")), [areas]);
+  const availableCities = citiesByCountry[country] ?? [];
 
   function updateParam(name: string, value: string) {
     const next = new URLSearchParams(searchParams.toString());
     if (value) next.set(name, value); else next.delete(name);
+    next.delete("page");
+    router.replace(`${pathname}${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+  }
+
+  function updateCountry(value: string) {
+    const next = new URLSearchParams(searchParams.toString());
+    if (value) next.set("pais", value); else next.delete("pais");
+    next.delete("localizacao");
+    next.delete("cidade");
     next.delete("page");
     router.replace(`${pathname}?${next.toString()}`, { scroll: false });
   }
@@ -45,8 +87,10 @@ export function JobsFilters({ areas, provinces }: JobsFiltersProps) {
   const activeCount = Array.from(params.keys()).filter((key) => key !== "page").length;
   const controls = <>
     <label className="jobs-filter-search"><span>Busca global</span><input defaultValue={params.get("q") ?? ""} onChange={(event) => updateSearch(event.target.value)} placeholder="Cargo, empresa ou palavra-chave" /></label>
-    <label><span>Área funcional</span><select value={params.get("categoria") ?? ""} onChange={(event) => updateParam("categoria", event.target.value)}><option value="">Todas as áreas</option>{areas.map((area) => <option key={area} value={area}>{area}</option>)}</select></label>
-    <label><span>Província / localização</span><select value={params.get("localizacao") ?? ""} onChange={(event) => updateParam("localizacao", event.target.value)}><option value="">Todas as localizações</option>{provinces.map((province) => <option key={province} value={province}>{province}</option>)}<option value="Remoto">Remoto</option></select></label>
+    <label><span>Área funcional</span><select value={params.get("categoria") ?? ""} onChange={(event) => updateParam("categoria", event.target.value)}><option value="">Todas as áreas</option>{availableAreas.map((area) => <option key={area} value={area}>{area}</option>)}</select></label>
+    <label><span>Ou escreva uma área</span><input value={customArea} onChange={(event) => updateParam("categoriaManual", event.target.value)} placeholder="Ex.: B2B, B2C, atendimento ao público" /></label>
+    <div className="jobs-location-grid"><label><span>País</span><select value={country} onChange={(event) => updateCountry(event.target.value)}><option value="">Todos os países</option>{countries.map((item) => <option key={item} value={item}>{item}</option>)}</select></label><label><span>Cidade</span><select value={params.get("cidade") ?? ""} disabled={!country} onChange={(event) => updateParam("cidade", event.target.value)}><option value="">{country ? "Todas as cidades" : "Escolha primeiro o país"}</option>{availableCities.map((item) => <option key={item} value={item}>{item}</option>)}</select></label></div>
+    <label><span>Província / localização</span><select value={params.get("localizacao") ?? ""} onChange={(event) => updateParam("localizacao", event.target.value)}><option value="">Todas as localizações</option><option value="Remoto">Remoto</option></select></label>
     <fieldset><legend>Modelo de trabalho</legend>{filterOptions.workModel.map((item) => <label className="jobs-check" key={item}><input type="checkbox" checked={selected("modelo").includes(item)} onChange={() => toggle("modelo", item)} />{item}</label>)}</fieldset>
     <fieldset><legend>Tipo de contrato</legend>{filterOptions.contractType.map((item) => <label className="jobs-check" key={item}><input type="checkbox" checked={selected("contrato").includes(item)} onChange={() => toggle("contrato", item)} />{item}</label>)}</fieldset>
     <label><span>Senioridade</span><select value={params.get("senioridade") ?? ""} onChange={(event) => updateParam("senioridade", event.target.value)}><option value="">Todos os níveis</option>{filterOptions.seniority.map((item) => <option key={item}>{item}</option>)}</select></label>

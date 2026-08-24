@@ -5,6 +5,7 @@ const homeSearch = readFileSync(new URL("../../components/HomeSearch.tsx", impor
 const catalog = readFileSync(new URL("../../components/MigratedCatalog.tsx", import.meta.url), "utf8");
 const dashboard = readFileSync(new URL("../../components/PortalDashboard.tsx", import.meta.url), "utf8");
 const home = readFileSync(new URL("../../app/page.tsx", import.meta.url), "utf8");
+const mascot = readFileSync(new URL("../../components/MascotHero.tsx", import.meta.url), "utf8");
 
 describe("OkutiJobs public discovery and company analytics", () => {
   it("keeps homepage search controls for category and location", () => {
@@ -28,9 +29,11 @@ describe("OkutiJobs public discovery and company analytics", () => {
   });
 
   it("renders the OkutiJobs mascot in the homepage hero", () => {
-    expect(home).toContain("/manus-storage/okutijobs-career-mascot-office_a314af6c.png");
-    expect(home).toContain("Mascote OkutiJobs a dar as boas-vindas aos profissionais");
-    expect(home).toContain("hero-mascot");
+    expect(home).toContain("MascotHero");
+    expect(mascot).toContain("/manus-storage/okutijobs-career-mascot-office-v2_da857c8c.png");
+    expect(mascot).toContain("Mascote OkutiJobs a dar as boas-vindas aos profissionais");
+    expect(mascot).toContain("hero-mascot");
+    expect(mascot).toContain("onError");
     expect(home).not.toContain("art-disc");
     expect(home).not.toContain("AI-powered");
     expect(home).not.toContain("matching</strong>");

@@ -13,13 +13,21 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const page = Math.max(1, Number(params.get("page") || 1));
   const q = params.get("q")?.trim();
+  const customArea = params.get("categoriaManual")?.trim();
+  const countries = list(params.get("pais"));
+  const cities = list(params.get("cidade"));
   const provinces = list(params.get("localizacao")).filter((item) => item.toLowerCase() !== "remoto");
   const models = list(params.get("modelo"));
   const contracts = list(params.get("contrato"));
   const sort = params.get("sort") || "recent";
 
   let query = supabase.from("jobs").select("id,company_id,slug,title,description,requirements,country,province,city,work_mode,contract_type,created_at,published_at", { count: "exact" }).eq("status", "published");
-  if (q) query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%,requirements.ilike.%${q}%`);
+  if (q || customArea) {
+    const search = [q, customArea].filter(Boolean).join(" ");
+    query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,requirements.ilike.%${search}%`);
+  }
+  if (countries.length) query = query.in("country", countries);
+  if (cities.length) query = query.in("city", cities);
   if (provinces.length) query = query.in("province", provinces);
   if (models.length) query = query.in("work_mode", models);
   if (contracts.length) query = query.in("contract_type", contracts);
