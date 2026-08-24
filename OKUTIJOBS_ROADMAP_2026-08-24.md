@@ -75,3 +75,20 @@ A `SUPABASE_SERVICE_ROLE_KEY` deve permanecer exclusivamente server-side. A equi
 ## 6. Estado de acompanhamento
 
 O OkutiJobs pode avançar para a preparação de produção, mas **não deve ser considerado lançado publicamente** enquanto os itens P0 não estiverem fechados. O próximo marco operacional é: **MFA activo + Vercel importada + redirects Supabase actualizados + homologação cross-account aprovada**.
+
+
+## 7. Decisão de escopo para o lançamento inicial
+
+Por decisão do proprietário, o lançamento inicial será tratado como um MVP seguro e operacional. O objectivo imediato é colocar no ar uma plataforma clara para apresentar a OkutiJobs, consultar vagas, criar contas, autenticar candidatos e empresas, submeter candidaturas, guardar CVs com privacidade, permitir à empresa consultar candidaturas e manter um Backoffice mínimo protegido.
+
+| Grupo | Incluído no lançamento | Tratamento |
+|---|---|---|
+| Experiência pública | Homepage, marca, contactos, vagas, pesquisa, filtros, detalhe de vaga e formação informativa | Manter e validar |
+| Candidato | Criação de conta, login por email/palavra-passe, perfil básico, CV privado, candidatura e histórico | P0 |
+| Empresa | Criação de conta, perfil básico, publicação/consulta de vagas e candidaturas recebidas | P0 |
+| Administração | Acesso admin, gestão essencial, RLS, auditoria e MFA | P0 de segurança |
+| Privacidade | Política, consentimentos, Storage privado e URLs assinados | P0 |
+| Operação | Email de confirmação/recuperação, monitorização mínima e expiração de vagas após deploy | P0 operacional |
+| Evolução posterior | IA avançada, LinkedIn SSO, traduções humanas completas, pagamentos/créditos, testes online, matching avançado, relatórios PDF e automações de marketing | Adiar sem bloquear o lançamento |
+
+A existência de módulos avançados no código não obriga a activá-los publicamente. Durante o lançamento, as funcionalidades adiadas devem permanecer ocultas, desactivadas ou identificadas como “em breve”, sem criar dependências operacionais desnecessárias.

@@ -57,3 +57,13 @@
 - [ ] Confirmar importação exclusiva do projecto Next.js `/home/ubuntu/okutijobs-next` na Vercel.
 - [ ] Configurar e validar as variáveis Preview/Production e os redirects Supabase no domínio Vercel.
 - [ ] Executar smoke test do deployment Vercel e confirmar que a aplicação não apresenta tela preta.
+
+## Bug reportado nesta sessão
+
+- [x] Diagnosticar a tela preta: a preview Next.js actual responde 200, CSS 200 e carregou visualmente; a tela preta não é reproduzível no servidor e é compatível com sessão/chunks antigos ou com o ecrã de autenticação Vercel.
+
+## Prioridade MVP para lançamento
+
+- [x] Fechar o escopo MVP: homepage, vagas, detalhe, candidatura, autenticação email/palavra-passe, CV privado, portal empresarial básico, Backoffice mínimo e privacidade.
+- [x] Adiar para pós-lançamento: IA avançada, LinkedIn SSO, traduções humanas completas, pagamentos/créditos reais, testes online completos, relatórios PDF e matching avançado.
+- [ ] Validar o fluxo mínimo no domínio Vercel antes da publicação definitiva.
