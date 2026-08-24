@@ -34,8 +34,8 @@
 ## Pendências antes de publicação
 
 - [ ] Activar e testar MFA TOTP interactivamente com a conta administrativa.
-- [ ] Importar exclusivamente `/home/ubuntu/okutijobs-next` na Vercel.
-- [ ] Configurar na Vercel as variáveis Supabase/Auth e redirects de produção.
+- [x] Importar exclusivamente `/home/ubuntu/okutijobs-next` na Vercel através do repositório `leonardosousaqm98-debug/Next.js-do-OkutiJobs.` na branch `main`.
+- [x] Configurar na Vercel as variáveis Supabase/Auth e `NEXT_PUBLIC_APP_URL` nos ambientes Preview/Production; redirects finais do Supabase Auth continuam a exigir o domínio definitivo.
 - [ ] Confirmar rotação final da `service_role` sem expor o segredo em documentação ou repositório.
 - [ ] Executar homologação cross-account com uma empresa e um candidato separados.
 - [x] Rever links internos e trocar as âncoras do catálogo principal por `next/link`; restantes âncoras secundárias ficam identificadas para uma ronda futura.
@@ -54,9 +54,9 @@
 
 ## Fase Vercel — sessão actual
 
-- [ ] Confirmar importação exclusiva do projecto Next.js `/home/ubuntu/okutijobs-next` na Vercel.
-- [ ] Configurar e validar as variáveis Preview/Production e os redirects Supabase no domínio Vercel.
-- [ ] Executar smoke test do deployment Vercel e confirmar que a aplicação não apresenta tela preta.
+- [x] Confirmar importação exclusiva do projecto Next.js `/home/ubuntu/okutijobs-next` na Vercel através do repositório `leonardosousaqm98-debug/Next.js-do-OkutiJobs.` na branch `main`.
+- [x] Configurar e validar as variáveis Preview/Production e `NEXT_PUBLIC_APP_URL` no domínio Vercel; redirects finais do Supabase Auth dependem do domínio definitivo.
+- [x] Executar smoke test do deployment Vercel: homepage e login carregaram sem tela preta/500; login real ainda requer teste com conta autenticada.
 
 ## Bug reportado nesta sessão
 
@@ -66,15 +66,32 @@
 
 - [x] Fechar o escopo MVP: homepage, vagas, detalhe, candidatura, autenticação email/palavra-passe, CV privado, portal empresarial básico, Backoffice mínimo e privacidade.
 - [x] Adiar para pós-lançamento: IA avançada, LinkedIn SSO, traduções humanas completas, pagamentos/créditos reais, testes online completos, relatórios PDF e matching avançado.
-- [ ] Validar o fluxo mínimo no domínio Vercel antes da publicação definitiva.
+- [x] Validar o fluxo mínimo no domínio Vercel: homepage e login carregam sem tela preta/500; autenticação real continua a precisar de teste com conta do utilizador.
 
 ## Configuração Vercel — execução actual
 
-- [ ] Confirmar que o projecto Vercel `okutijobs` usa o repositório Next.js `leonardosousaqm98-debug/Next.js-do-OkutiJobs.` na branch `main`.
-- [ ] Configurar as variáveis Supabase e `NEXT_PUBLIC_APP_URL` no ambiente Preview, mantendo a service role exclusivamente server-side.
-- [ ] Validar o deployment Preview, as rotas públicas e o carregamento de CSS/chunks.
+- [x] Confirmar que o projecto Vercel `okutijobs` usa o repositório Next.js `leonardosousaqm98-debug/Next.js-do-OkutiJobs.` na branch `main`.
+- [x] Configurar as variáveis Supabase e `NEXT_PUBLIC_APP_URL` nos ambientes Preview/Production, mantendo a service role exclusivamente server-side.
+- [x] Validar deployment Vercel e rotas públicas: homepage e login carregaram sem tela preta/500; autenticação real continua a precisar de teste com conta do utilizador.
 
 ## Bloqueador Vercel encontrado
 
-- [ ] Corrigir o projecto Vercel que está configurado com output directory `public`; usar framework Next.js e deixar o output directory vazio/automático.
-- [ ] Tornar o middleware Supabase tolerante a URL ausente ou malformada e adicionar teste de regressão para evitar 500 na homepage.
+- [x] Corrigir o projecto Vercel configurado com output directory `public`; framework Next.js e output directory automático aplicados.
+- [x] Tornar o middleware Supabase tolerante a URL ausente ou malformada e adicionar teste de regressão; 31 testes, typecheck e build aprovados.
+
+## Homologação final de autenticação
+
+- [ ] Testar login real no domínio `https://okutijobs.vercel.app` sem partilhar credenciais na conversa.
+- [ ] Confirmar callback/redirect do Supabase Auth para o domínio Vercel e a rota `/auth/callback`.
+- [ ] Activar MFA TOTP para a conta administrativa e validar o primeiro código localmente no navegador.
+
+## Bug de autenticação reportado
+
+- [ ] Diagnosticar e corrigir o login em que a palavra-passe criada no registo não é reconhecida no domínio Vercel/Supabase.
+
+## Recuperação dos fluxos essenciais do candidato
+
+- [ ] Tornar visível e funcional o formulário de criação de conta de candidato no MVP.
+- [ ] Tornar visível e funcional o painel autenticado do candidato.
+- [ ] Recuperar gestão de vagas favoritas, candidaturas e conclusão de perfil/CV.
+- [ ] Melhorar a apresentação pública e a navegação para não parecer uma versão incompleta do site.
