@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 const homeSearch = readFileSync(new URL("../../components/HomeSearch.tsx", import.meta.url), "utf8");
 const catalog = readFileSync(new URL("../../components/MigratedCatalog.tsx", import.meta.url), "utf8");
 const dashboard = readFileSync(new URL("../../components/PortalDashboard.tsx", import.meta.url), "utf8");
+const home = readFileSync(new URL("../../app/page.tsx", import.meta.url), "utf8");
 
 describe("OkutiJobs public discovery and company analytics", () => {
   it("keeps homepage search controls for category and location", () => {
@@ -16,6 +17,11 @@ describe("OkutiJobs public discovery and company analytics", () => {
     expect(catalog).toContain("Requisitos da vaga");
     expect(catalog).toContain("Candidatar-me a esta vaga");
     expect(catalog).toContain("requirements-list");
+  });
+
+  it("removes the requested homepage eyebrow without changing the hero", () => {
+    expect(home).not.toContain("Talento angolano. Oportunidades sem fronteiras.");
+    expect(home).toContain("O próximo passo da sua carreira");
   });
 
   it("renders company statistics from per-job Supabase data", () => {

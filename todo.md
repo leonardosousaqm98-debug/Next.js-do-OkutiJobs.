@@ -160,3 +160,7 @@
 
 - [x] Restaurar o modal para aparecer apenas quando não existe escolha guardada no navegador.
 - [x] Validar que escolher Candidato ou Empresa oculta o modal em acessos seguintes e fornecer o link inicial para reiniciar o teste; validação concluída com 43 testes, TypeScript e build de 30 rotas.
+
+## Ajuste de copy da homepage
+
+- [x] Remover a frase “Talento angolano. Oportunidades sem fronteiras.” da nova homepage; o título e restante hero foram preservados. Validação: 44 testes, TypeScript e build de 30 rotas.
