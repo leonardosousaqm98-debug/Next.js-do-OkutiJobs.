@@ -80,10 +80,18 @@ export function JobsFilters({ areas, countries, citiesByCountry }: JobsFiltersPr
     updateParam(name, next.join(","));
   }
 
+  function clearLocationAndArea() {
+    const next = new URLSearchParams(searchParams.toString());
+    ["pais", "cidade", "categoria", "categoriaManual"].forEach((key) => next.delete(key));
+    next.delete("page");
+    router.replace(`${pathname}${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+  }
+
   function clear() {
     router.replace(pathname, { scroll: false });
   }
 
+  const activeLocationArea = ["pais", "cidade", "categoria", "categoriaManual"].some((key) => params.has(key));
   const activeCount = Array.from(params.keys()).filter((key) => key !== "page").length;
   const controls = <>
     <label className="jobs-filter-search"><span>Busca global</span><input defaultValue={params.get("q") ?? ""} onChange={(event) => updateSearch(event.target.value)} placeholder="Cargo, empresa ou palavra-chave" /></label>
@@ -96,7 +104,8 @@ export function JobsFilters({ areas, countries, citiesByCountry }: JobsFiltersPr
     <label><span>Senioridade</span><select value={params.get("senioridade") ?? ""} onChange={(event) => updateParam("senioridade", event.target.value)}><option value="">Todos os níveis</option>{filterOptions.seniority.map((item) => <option key={item}>{item}</option>)}</select></label>
     <div className="jobs-salary-fields"><span>Intervalo salarial (AOA)</span><div><input type="number" min="0" placeholder="Mínimo" value={params.get("salaryMin") ?? ""} onChange={(event) => updateParam("salaryMin", event.target.value)} /><input type="number" min="0" placeholder="Máximo" value={params.get("salaryMax") ?? ""} onChange={(event) => updateParam("salaryMax", event.target.value)} /></div></div>
     <label><span>Ordenar por</span><select value={params.get("sort") ?? "recent"} onChange={(event) => updateParam("sort", event.target.value)}><option value="recent">Mais recentes</option><option value="salary">Maior salário</option><option value="popular">Mais populares</option></select></label>
-    {activeCount > 0 && <button className="jobs-clear" type="button" onClick={clear}>Limpar filtros ({activeCount})</button>}
+    {activeLocationArea && <button className="jobs-clear jobs-clear-secondary" type="button" onClick={clearLocationAndArea}>Limpar país, cidade e área</button>}
+    {activeCount > 0 && <button className="jobs-clear" type="button" onClick={clear}>Limpar todos os filtros ({activeCount})</button>}
   </>;
 
   return <section className="jobs-filter-shell"><button className="jobs-filter-toggle" type="button" onClick={() => setOpen(!open)} aria-expanded={open}>Filtrar vagas {activeCount > 0 ? `(${activeCount})` : ""}<span>☷</span></button><aside className={open ? "jobs-filter-panel open" : "jobs-filter-panel"}>{controls}</aside></section>;

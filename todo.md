@@ -230,3 +230,9 @@
 
 - [x] Expandir áreas funcionais, permitir área escrita manualmente e sincronizar país/cidade nos filtros de vagas.
 - [x] Diagnosticar e corrigir o erro da mascote, incluindo fallback visual e validação responsiva.
+
+## Favoritos e feedback de filtragem
+
+- [x] Criar limpeza específica para país, cidade e área funcional.
+- [x] Mostrar skeleton/loading durante a filtragem após alterações de localização.
+- [x] Implementar favoritar vagas com persistência para utilizadores autenticados e fallback local para visitantes.
