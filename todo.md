@@ -91,10 +91,10 @@
 
 ## Recuperação dos fluxos essenciais do candidato
 
-- [ ] Tornar visível e funcional o formulário de criação de conta de candidato no MVP.
-- [ ] Tornar visível e funcional o painel autenticado do candidato.
-- [ ] Recuperar gestão de vagas favoritas, candidaturas e conclusão de perfil/CV.
-- [ ] Melhorar a apresentação pública e a navegação para não parecer uma versão incompleta do site.
+- [x] Tornar visível e funcional o formulário de criação de conta de candidato no MVP; implementado no `EmailAuthForm` com criação por email/palavra-passe.
+- [x] Tornar visível e funcional o painel autenticado do candidato; rota `/candidato` usa `PortalDashboard` protegido.
+- [x] Recuperar gestão de vagas favoritas, candidaturas e conclusão de perfil/CV; perfil, candidaturas e favoritos estão ligados às rotas e APIs existentes.
+- [x] Melhorar a apresentação pública e a navegação para não parecer uma versão incompleta do site; hero, serviços, ilustrações flat, banner e navegação foram actualizados.
 
 ## Navegação orientada a candidatos
 
@@ -236,3 +236,25 @@
 - [x] Criar limpeza específica para país, cidade e área funcional.
 - [x] Mostrar skeleton/loading durante a filtragem após alterações de localização.
 - [x] Implementar favoritar vagas com persistência para utilizadores autenticados e fallback local para visitantes.
+
+## Favoritos, partilha e compra de CV
+
+- [x] Sincronizar favoritos de vagas com Supabase para utilizadores autenticados e manter migração segura do localStorage; a migração SQL aditiva está em `supabase/migrations/0004_candidate_job_favorites.sql`.
+- [x] Adicionar partilha de vagas com Web Share API, copiar link e fallback para email.
+- [x] Criar modal responsivo Comprar CV com proposta de valor, upload PDF/DOC/DOCX, texto livre e etapa de pagamento preparada; não processa cobranças nesta fase.
+
+## Actualização visual — ilustrações flat corporativas
+
+- [x] Preparar ilustração flat do hero com equipa a fincar uma bandeira, em azul profundo, laranja e fundo transparente; asset reservado em `/manus-storage/okutijobs-flat-hero-team_d712ae0c.png`.
+- [x] Integrar ilustrações flat nas secções Sobre Nós e nos quatro cards de serviços, com fallback SVG acessível.
+- [x] Adicionar banner panorâmico de transição antes do conteúdo seguinte nas páginas de candidatos e empresas; asset reservado em `/manus-storage/okutijobs-flat-workspace-banner_deef14ea.png`.
+- [x] Implementar animações fade-in/slide-up responsivas e acessíveis, com suporte a `prefers-reduced-motion`.
+- [x] Validar composição desktop/mobile, contraste, overflow e performance dos assets; lint, 53 testes, TypeScript e build com 32 rotas passaram.
+
+## Interacções visuais e confirmação da versão publicável
+
+- [ ] Confirmar que a preview utilizada corresponde ao código de `/home/ubuntu/okutijobs-next` e documentar o link correcto para teste.
+- [ ] Adicionar parallax suave e acessível às ilustrações do banner de transição.
+- [ ] Implementar carrossel horizontal interactivo dos serviços em mobile, mantendo grelha em desktop.
+- [ ] Criar tooltips informativos nas ilustrações dos serviços com benefícios claros.
+- [ ] Validar as interacções em desktop/mobile, incluindo teclado e redução de movimento.

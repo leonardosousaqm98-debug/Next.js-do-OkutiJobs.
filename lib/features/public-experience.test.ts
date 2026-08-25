@@ -28,12 +28,10 @@ describe("OkutiJobs public discovery and company analytics", () => {
     expect(catalog).toContain("Solicitar uma proposta");
   });
 
-  it("renders the OkutiJobs mascot in the homepage hero", () => {
-    expect(home).toContain("MascotHero");
-    expect(mascot).toContain("/manus-storage/okutijobs-career-mascot-office-v2_da857c8c.png");
-    expect(mascot).toContain("Mascote OkutiJobs a dar as boas-vindas aos profissionais");
-    expect(mascot).toContain("hero-mascot");
-    expect(mascot).toContain("onError");
+  it("renders the new flat team illustration in the homepage hero", () => {
+    expect(home).toContain("flat-hero-illustration");
+    expect(home).toContain("/manus-storage/okutijobs-flat-hero-team_d712ae0c.png");
+    expect(home).toContain("Equipa de profissionais a trabalhar em conjunto");
     expect(home).not.toContain("art-disc");
     expect(home).not.toContain("AI-powered");
     expect(home).not.toContain("matching</strong>");
@@ -42,6 +40,13 @@ describe("OkutiJobs public discovery and company analytics", () => {
   it("removes the requested homepage eyebrow without changing the hero", () => {
     expect(home).not.toContain("Talento angolano. Oportunidades sem fronteiras.");
     expect(home).toContain("O próximo passo da sua carreira");
+  });
+
+  it("adds flat illustration interactions for depth, mobile browsing and service guidance", () => {
+    expect(catalog).toContain("ParallaxIllustration");
+    expect(catalog).toContain("services-carousel");
+    expect(catalog).toContain("service-illustration-tooltip");
+    expect(catalog).toContain("data-tooltip={service.benefit}");
   });
 
   it("renders company statistics from per-job Supabase data", () => {
