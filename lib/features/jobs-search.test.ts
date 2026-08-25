@@ -6,6 +6,10 @@ const catalog = readFileSync(new URL("../../components/MigratedCatalog.tsx", imp
 const api = readFileSync(new URL("../../app/api/jobs/route.ts", import.meta.url), "utf8");
 const detail = readFileSync(new URL("../../app/vagas/[slug]/page.tsx", import.meta.url), "utf8");
 const favorite = readFileSync(new URL("../../components/JobFavoriteButton.tsx", import.meta.url), "utf8");
+const share = readFileSync(new URL("../../components/JobShareButton.tsx", import.meta.url), "utf8");
+const cvOrder = readFileSync(new URL("../../components/CvOrderModal.tsx", import.meta.url), "utf8");
+const favoriteRoute = readFileSync(new URL("../../app/api/job-favorites/route.ts", import.meta.url), "utf8");
+const favoriteMigration = readFileSync(new URL("../../supabase/migrations/0004_candidate_job_favorites.sql", import.meta.url), "utf8");
 
 describe("advanced jobs search", () => {
   it("supports shared URL filters, debounce, reset and mobile drawer", () => {
@@ -45,6 +49,17 @@ describe("advanced jobs search", () => {
     expect(favorite).toContain("aria-pressed");
     expect(favorite).toContain("localStorage");
     expect(catalog).toContain("JobFavoriteButton");
+  });
+
+  it("supports cloud favourites, sharing and the CV checkout flow", () => {
+    expect(favoriteRoute).toContain("candidate_job_favorites");
+    expect(favoriteMigration).toContain("enable row level security");
+    expect(share).toContain("navigator.share");
+    expect(share).toContain("clipboard");
+    expect(cvOrder).toContain("15.000 Kz");
+    expect(cvOrder).toContain("48 horas");
+    expect(cvOrder).toContain("Multicaixa Express");
+    expect(cvOrder).toContain("Arraste o seu CV");
   });
 
   it("sends unauthenticated candidates to login from a job detail", () => {

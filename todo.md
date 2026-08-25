@@ -253,8 +253,8 @@
 
 ## Interacções visuais e confirmação da versão publicável
 
-- [ ] Confirmar que a preview utilizada corresponde ao código de `/home/ubuntu/okutijobs-next` e documentar o link correcto para teste.
-- [ ] Adicionar parallax suave e acessível às ilustrações do banner de transição.
-- [ ] Implementar carrossel horizontal interactivo dos serviços em mobile, mantendo grelha em desktop.
-- [ ] Criar tooltips informativos nas ilustrações dos serviços com benefícios claros.
-- [ ] Validar as interacções em desktop/mobile, incluindo teclado e redução de movimento.
+- [x] Confirmar que a preview utilizada corresponde ao código de `/home/ubuntu/okutijobs-next` e documentar o link correcto para teste; o domínio Vercel ainda serve o commit anterior e aguarda novo deployment.
+- [x] Adicionar parallax suave e acessível às ilustrações do banner de transição.
+- [x] Implementar carrossel horizontal interactivo dos serviços em mobile, mantendo grelha em desktop.
+- [x] Criar tooltips informativos nas ilustrações dos serviços com benefícios claros.
+- [x] Validar as interacções em desktop/mobile, incluindo teclado e redução de movimento; 54 testes, lint, TypeScript e build passaram.

@@ -20,29 +20,73 @@ function readFavorites() {
   }
 }
 
+function saveFavorites(ids: string[]) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+  } catch {
+    return false;
+  }
+  return true;
+}
+
 export function JobFavoriteButton({ jobId, title = "vaga", compact = false }: JobFavoriteButtonProps) {
   const [saved, setSaved] = useState(false);
   const [ready, setReady] = useState(false);
+  const [cloudReady, setCloudReady] = useState(false);
   const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
-    setSaved(readFavorites().includes(jobId));
-    setReady(true);
+    let cancelled = false;
+    async function hydrate() {
+      const localIds = readFavorites();
+      try {
+        const response = await fetch("/api/job-favorites", { cache: "no-store" });
+        if (response.ok) {
+          const payload = await response.json() as { favorites?: unknown };
+          const cloudIds = Array.isArray(payload.favorites) ? payload.favorites.filter((item): item is string => typeof item === "string") : [];
+          const mergedIds = Array.from(new Set([...cloudIds, ...localIds]));
+          await Promise.all(localIds.filter((id) => !cloudIds.includes(id)).map((id) => fetch("/api/job-favorites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId: id }) })));
+          if (!cancelled) {
+            saveFavorites(mergedIds);
+            setCloudReady(true);
+            setSaved(mergedIds.includes(jobId));
+          }
+        } else if (!cancelled) {
+          setSaved(localIds.includes(jobId));
+        }
+      } catch {
+        if (!cancelled) setSaved(localIds.includes(jobId));
+      } finally {
+        if (!cancelled) setReady(true);
+      }
+    }
+    void hydrate();
+    return () => { cancelled = true; };
   }, [jobId]);
 
-  function toggle(event: React.MouseEvent<HTMLButtonElement>) {
+  async function toggle(event: React.MouseEvent<HTMLButtonElement>) {
     event.stopPropagation();
-    const favorites = readFavorites();
-    const next = favorites.includes(jobId) ? favorites.filter((id) => id !== jobId) : [...favorites, jobId];
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
+    const previous = readFavorites();
+    const next = previous.includes(jobId) ? previous.filter((id) => id !== jobId) : [...previous, jobId];
+    const nextSaved = next.includes(jobId);
+    if (!saveFavorites(next)) {
       setAnnouncement("Não foi possível guardar esta vaga neste navegador.");
       return;
     }
-    const nextSaved = next.includes(jobId);
     setSaved(nextSaved);
     window.dispatchEvent(new Event("okutijobs:favorites-changed"));
+    if (cloudReady) {
+      try {
+        const response = await fetch(nextSaved ? "/api/job-favorites" : `/api/job-favorites?jobId=${encodeURIComponent(jobId)}`, { method: nextSaved ? "POST" : "DELETE", headers: nextSaved ? { "Content-Type": "application/json" } : undefined, body: nextSaved ? JSON.stringify({ jobId }) : undefined });
+        if (!response.ok) throw new Error("sync failed");
+      } catch {
+        saveFavorites(previous);
+        setSaved(!nextSaved);
+        window.dispatchEvent(new Event("okutijobs:favorites-changed"));
+        setAnnouncement("Não foi possível sincronizar esta vaga. Tente novamente.");
+        return;
+      }
+    }
     setAnnouncement(nextSaved ? `${title} foi guardada nas suas vagas favoritas.` : `${title} foi removida das vagas favoritas.`);
   }
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BuyCvTrigger } from "@/components/CvOrderModal";
 
 type SiteHeaderProps = {
   signedIn?: boolean;
@@ -23,7 +24,7 @@ export function SiteHeader({ signedIn = false, accountHref = "/dashboard" }: Sit
       </Link>
       <nav className="desktop-nav" aria-label="Navegação principal">
         <Link href="/vagas">Encontrar vagas</Link>
-        <Link href="/revisao-cv">Comprar CV</Link>
+        <BuyCvTrigger className="header-service-trigger" ariaLabel="Comprar CV" />
         <Link href="/pagina-candidatos">Apoio à candidatura</Link>
         <details className="nav-dropdown">
           <summary>Serviços</summary>
@@ -36,7 +37,7 @@ export function SiteHeader({ signedIn = false, accountHref = "/dashboard" }: Sit
         <summary aria-label="Abrir menu">Menu</summary>
         <div className="nav-dropdown-menu" role="menu">
           <Link href="/vagas" role="menuitem">Encontrar vagas</Link>
-          <Link href="/revisao-cv" role="menuitem">Comprar CV</Link>
+          <BuyCvTrigger className="header-service-trigger" ariaLabel="Comprar CV" />
           <Link href="/pagina-candidatos" role="menuitem">Apoio à candidatura</Link>
           {candidateServices.map((service) => <Link key={`mobile-${service.href}`} href={service.href} role="menuitem">{service.label}</Link>)}
         </div>
