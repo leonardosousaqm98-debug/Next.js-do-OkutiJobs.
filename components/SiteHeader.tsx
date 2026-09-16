@@ -18,7 +18,7 @@ export function SiteHeader({ signedIn = false, accountHref = "/dashboard" }: Sit
     <header className="site-header">
       <Link href="/" className="brand" aria-label="OkutiJobs — início">
         <span className="brand-lockup">
-          <span className="brand-symbol"><img src="https://wmkxeqghopmbsfwptpzq.supabase.co/storage/v1/object/public/brand-assets/okutijobs-new-mark.png" alt="" /></span>
+          <span className="brand-symbol"><img src="/icon.png" alt="" width="34" height="34" /></span>
           <span className="brand-word">Okuti<span>Jobs</span></span>
         </span>
       </Link>
