@@ -6,7 +6,9 @@ type FlatIllustrationProps = { src: string; alt: string; className?: string; loa
 
 export function FlatIllustration({ src, alt, className = "", loading = "lazy" }: FlatIllustrationProps) {
   const [failed, setFailed] = useState(false);
+  const localFallback = src.includes("okutijobs-flat-hero-team") ? "/okutijobs-mascot-hr.png" : null;
   if (!failed) return <img className={className} src={src} alt={alt} loading={loading} onError={() => setFailed(true)} />;
+  if (localFallback) return <img className={className} src={localFallback} alt="Mascote OkutiJobs a apresentar uma oportunidade de carreira" loading="eager" />;
   return <svg className={`${className} flat-illustration-fallback`} viewBox="0 0 520 320" role="img" aria-label={alt} focusable="false">
     <rect x="18" y="32" width="484" height="256" rx="36" fill="#e4f1f1" />
     <circle cx="126" cy="124" r="38" fill="#f2b45b" />

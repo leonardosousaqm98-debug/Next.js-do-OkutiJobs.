@@ -1,10 +1,11 @@
 import { EmailAuthForm } from "@/components/EmailAuthForm";
 
-type LoginPageProps = { searchParams: Promise<{ next?: string }> };
+type LoginPageProps = { searchParams: Promise<{ next?: string; error?: string }> };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath = typeof params.next === "string" && params.next.startsWith("/") && !params.next.startsWith("//") ? params.next : undefined;
+  const accessMessage = params.error === "admin-required" ? "Esta conta ainda não tem acesso ao painel administrativo. Entre com o email de um membro activo da equipa OkutiJobs." : params.error === "configuration" ? "O serviço de autenticação está temporariamente indisponível. Tente novamente dentro de instantes." : null;
   return (
     <main className="auth-page">
       <div className="auth-shell">
@@ -20,6 +21,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               <p className="eyebrow">Acesso seguro</p>
               <h2 className="auth-title">Bem-vindo de volta.</h2>
               <p className="auth-lede">Entre na sua conta ou crie o seu perfil profissional.</p>
+              {accessMessage ? <p className="auth-access-message" role="alert">{accessMessage}</p> : null}
               <EmailAuthForm nextPath={nextPath} />
             </div>
           </div>
