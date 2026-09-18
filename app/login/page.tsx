@@ -12,6 +12,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <section className="auth-card">
           <aside className="auth-visual" aria-label="Benefícios da OkutiJobs">
             <div className="visual-brand"><span>O</span> OkutiJobs</div>
+            <img className="auth-visual-image" src="/okutijobs-career-mascot-office-v2.png" alt="Profissional OkutiJobs num ambiente de escritório" />
             <div className="visual-copy"><p className="eyebrow">O seu próximo passo</p><h1>Talento que encontra o seu lugar.</h1><p>Crie o seu espaço profissional, descubra oportunidades e avance com mais confiança.</p></div>
             <div className="visual-orbit" aria-hidden="true" />
             <div className="visual-stat"><strong>+ oportunidades</strong><span>num só lugar</span></div>
