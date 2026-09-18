@@ -77,18 +77,23 @@ export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
     setBusy(true);
     const result = mode === "login"
       ? await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
-      : await supabase.auth.signUp({ email: normalizedEmail, password, options: { data: { preferred_language: "pt", account_type: accountType } } });
+      : null;
     setBusy(false);
-    if (result.error) {
+    if (mode === "signup") {
+      const response = await fetch("/api/auth/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: normalizedEmail, password, accountType }) });
+      const payload = await response.json().catch(() => null) as { error?: string; accountType?: AccountType } | null;
+      if (!response.ok) return setError(payload?.error || "Não foi possível criar a conta. Verifique os dados e tente novamente.");
+      const fallbackPath = payload?.accountType === "company" ? "/empresa" : "/candidato";
+      router.push(nextPath || fallbackPath);
+      router.refresh();
+      return;
+    }
+    if (result?.error) {
       const authMessage = result.error.message.toLowerCase();
       if (authMessage.includes("email not confirmed")) return setError("O email ainda não foi confirmado. Abra a mensagem recebida ou reenvie a confirmação abaixo.");
       return setError(mode === "login" ? "Email ou palavra-passe incorrectos." : "Não foi possível criar a conta. Verifique os dados e tente novamente.");
     }
-    if (mode === "signup" && !result.data.session) {
-      setMessage("Conta criada. Confirme o seu email antes de iniciar sessão.");
-      return;
-    }
-    const fallbackPath = mode === "signup" ? (accountType === "company" ? "/empresa" : "/candidato") : "/dashboard";
+    const fallbackPath = "/dashboard";
     router.push(nextPath || fallbackPath);
     router.refresh();
   }
