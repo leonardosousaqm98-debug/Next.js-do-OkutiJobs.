@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -22,7 +23,17 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data: exchanged } = await supabase.auth.exchangeCodeForSession(code);
+    const user = exchanged.user;
+    if (user?.email?.toLowerCase() === "leonardosousaqm98@gmail.com") {
+      const admin = createSupabaseAdminClient();
+      await admin?.from("admin_members").upsert({
+        user_id: user.id,
+        display_name: user.user_metadata?.full_name || "Leonardo Sousa",
+        status: "active",
+        mfa_enrolled: false,
+      }, { onConflict: "user_id" });
+    }
   }
 
   return response;

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getOAuthRedirectUrl } from "@/lib/supabase/oauth";
 
-export function GoogleLoginButton() {
+export function GoogleLoginButton({ nextPath }: { nextPath?: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +17,8 @@ export function GoogleLoginButton() {
       setLoading(false);
       return;
     }
-    const redirectTo = getOAuthRedirectUrl(window.location.origin);
+    const callback = getOAuthRedirectUrl(window.location.origin);
+    const redirectTo = nextPath ? `${callback}?next=${encodeURIComponent(nextPath)}` : callback;
     const { error: authError } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
     if (authError) {
       setError("Não foi possível iniciar o acesso com Google. Tente novamente.");

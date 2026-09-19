@@ -107,7 +107,7 @@ export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
       </div>
 
       <div className="auth-social-row">
-        <GoogleLoginButton />
+        <GoogleLoginButton nextPath={nextPath} />
         <button type="button" className="social-provider" onClick={() => unavailable("linkedin")}><ProviderIcon provider="linkedin" /><span>LinkedIn</span></button>
         <button type="button" className="social-provider" onClick={() => unavailable("github")}><ProviderIcon provider="github" /><span>GitHub</span></button>
       </div>
