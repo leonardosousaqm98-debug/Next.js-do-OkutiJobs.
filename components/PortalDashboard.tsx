@@ -8,7 +8,7 @@ export type CompanyJobStat = { id: string; title: string; status: string; applic
 function Header({ kind }: { kind: "candidate" | "company" }) { return <SiteHeader signedIn accountHref={kind === "candidate" ? "/candidato" : "/empresa"} />; }
 
 const candidateLinks = [{ label: "Oportunidades compatíveis", href: "/vagas", note: "6 vagas disponíveis" }, { label: "O meu perfil", href: "/profile", note: "Complete os seus dados" }, { label: "As minhas candidaturas", href: "/candidato/candidaturas", note: "Acompanhe o seu percurso" }, { label: "Revisão de CV por IA", href: "/profile", note: "Disponível ao carregar um CV" }];
-const companyLinks = [{ label: "Criar nova oferta", href: "/pagina-empresas", note: "Publique uma oportunidade" }, { label: "Ofertas de emprego", href: "/vagas", note: "Gerir vagas publicadas" }, { label: "Candidaturas recebidas", href: "/empresa/candidaturas", note: "Consultar perfis e CVs" }, { label: "Banco de talentos", href: "/empresa/talentos", note: "Pesquisar perfis compatíveis" }, { label: "Formação corporativa", href: "/formacoes", note: "Desenvolver a sua equipa" }];
+const companyLinks = [{ label: "Criar nova oferta", href: "/pagina-empresas", note: "Publique uma oportunidade" }, { label: "Ofertas de emprego", href: "/vagas", note: "Gerir vagas publicadas" }, { label: "Candidaturas recebidas", href: "/empresa/candidaturas", note: "Consultar perfis e CVs" }, { label: "Estatísticas e métricas", href: "/empresa/estatisticas", note: "Acompanhar o desempenho" }, { label: "Banco de talentos", href: "/empresa/talentos", note: "Pesquisar perfis compatíveis" }];
 
 function CompanyAnalytics({ stats }: { stats: CompanyJobStat[] }) {
   const total = stats.reduce((sum, job) => sum + job.applications, 0);

@@ -27,9 +27,31 @@ const courses: Course[] = [
 function Header() { return <SiteHeader />; }
 
 export function ApplicationModal({ job, onClose }: { job: Job; onClose: () => void }) {
-  const [confirmed, setConfirmed] = useState(false); const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle"); const [message, setMessage] = useState("");
-  async function submit(event: React.FormEvent) { event.preventDefault(); if (!confirmed) { setState("error"); setMessage("Confirme que o seu perfil e CV estão actualizados antes de continuar."); return; } setState("loading"); const response = await fetch("/api/applications", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId: job.id }) }); const body = await response.json().catch(() => ({})); if (response.ok) { setState("success"); setMessage("A sua candidatura foi registada com sucesso."); } else { setState("error"); setMessage(body.error || "Não foi possível enviar a candidatura."); } }
-  return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="application-modal" role="dialog" aria-modal="true" aria-labelledby="application-title"><button className="modal-close" onClick={onClose} aria-label="Fechar formulário">×</button>{state === "success" ? <div className="modal-success"><span className="success-mark">✓</span><p className="eyebrow">Candidatura enviada</p><h2 id="application-title">Boa sorte no próximo passo.</h2><p>{message}</p><button className="button button-dark" onClick={onClose}>Continuar a explorar</button></div> : <><p className="eyebrow">Candidatura rápida</p><h2 id="application-title">{job.title}</h2><p className="modal-company">{job.company} · {job.place || "Localização a confirmar"}</p><div className="modal-summary"><strong>O que acontece agora?</strong><span>Usaremos o seu perfil e o CV privado guardado na conta para apresentar a candidatura à empresa.</span></div><form onSubmit={submit}><label className="modal-check"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} /> <span>Confirmo que o meu perfil está actualizado e autorizo o envio desta candidatura.</span></label>{message && <p className="form-message" role="alert">{message}</p>}<div className="modal-actions"><button type="button" className="button button-light" onClick={onClose}>Cancelar</button><button type="submit" className="button button-orange" disabled={state === "loading"}>{state === "loading" ? "A enviar…" : "Enviar candidatura ↗"}</button></div></form></>}</section></div>;
+  const [confirmed, setConfirmed] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+  function chooseFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const selected = event.target.files?.[0] ?? null;
+    if (!selected) return;
+    if (selected.type !== "application/pdf" || selected.size > 10 * 1024 * 1024) { setFile(null); setPreviewUrl(null); setState("error"); setMessage("Seleccione um PDF válido até 10 MB."); return; }
+    setFile(selected); setPreviewUrl(URL.createObjectURL(selected)); setState("idle"); setMessage("");
+  }
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!confirmed) { setState("error"); setMessage("Confirme a autorização de envio da candidatura."); return; }
+    setState("loading"); setMessage("");
+    if (file) {
+      const upload = new FormData(); upload.append("file", file);
+      const uploadResponse = await fetch("/api/candidate/cv", { method: "POST", body: upload });
+      if (!uploadResponse.ok) { const body = await uploadResponse.json().catch(() => ({})); setState("error"); setMessage(body.error || "Não foi possível guardar o currículo."); return; }
+    }
+    const response = await fetch("/api/applications", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId: job.id }) });
+    const body = await response.json().catch(() => ({}));
+    if (response.ok) { setState("success"); setMessage("A sua candidatura foi registada com sucesso."); } else { setState("error"); setMessage(body.error || "Não foi possível enviar a candidatura."); }
+  }
+  return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="application-modal application-modal-enhanced" role="dialog" aria-modal="true" aria-labelledby="application-title"><button className="modal-close" onClick={onClose} aria-label="Fechar formulário">×</button>{state === "success" ? <div className="modal-success"><span className="success-mark">✓</span><p className="eyebrow">Candidatura enviada</p><h2 id="application-title">Boa sorte no próximo passo.</h2><p>{message}</p><button className="button button-dark" onClick={onClose}>Continuar a explorar</button></div> : <><p className="eyebrow">Candidatura rápida</p><h2 id="application-title">Enviar candidatura</h2><p className="modal-company">{job.title} · {job.company}</p><div className="modal-summary"><strong>Currículo em PDF</strong><span>Anexe o seu CV para o recrutador receber a versão mais actualizada do seu perfil.</span></div><form onSubmit={submit}><label className="cv-upload-field"><span><strong>{file ? file.name : "Seleccione o seu currículo"}</strong><small>PDF até 10 MB · opcional se já tiver um CV na conta</small></span><input type="file" accept="application/pdf,.pdf" onChange={chooseFile} /></label>{previewUrl ? <div className="cv-preview"><iframe title="Pré-visualização do currículo" src={previewUrl} /><span>Pré-visualização imediata</span></div> : null}<label className="modal-check"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} /> <span>Autorizo o envio do meu perfil e currículo para esta candidatura.</span></label>{message && <p className="form-message" role="alert">{message}</p>}<div className="modal-actions"><button type="button" className="button button-light" onClick={onClose}>Cancelar</button><button type="submit" className="button button-orange" disabled={state === "loading"}>{state === "loading" ? "A enviar…" : "Enviar candidatura ↗"}</button></div></form></>}</section></div>;
 }
 
 export function JobsCatalog({ jobs, areas, provinces, countries, citiesByCountry }: { jobs: Job[]; areas: string[]; provinces: string[]; countries: string[]; citiesByCountry: Record<string, string[]> }) {
