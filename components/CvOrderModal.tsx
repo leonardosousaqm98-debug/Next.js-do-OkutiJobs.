@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 
 const acceptedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
 
-export function BuyCvTrigger({ className = "", ariaLabel = "Comprar CV" }: { className?: string; ariaLabel?: string }) {
+export function BuyCvTrigger({ className = "", ariaLabel = "Comprar CV", children }: { className?: string; ariaLabel?: string; children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  return <><button type="button" className={className} aria-label={ariaLabel} onClick={() => setOpen(true)}>Comprar CV</button>{open && <CvOrderModal onClose={() => setOpen(false)} />}</>;
+  return <><button type="button" className={className} aria-label={ariaLabel} onClick={() => setOpen(true)}>{children ?? "Comprar CV"}</button>{open && <CvOrderModal onClose={() => setOpen(false)} />}</>;
 }
 
 export function CvOrderModal({ onClose }: { onClose: () => void }) {
