@@ -10,29 +10,15 @@ export function AudienceChoiceModal() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // Ask on the first visit only; the selected route is remembered for this browser.
-    try {
-      setOpen(window.localStorage.getItem(STORAGE_KEY) === null);
-    } catch {
-      setOpen(true);
-    }
+    // A homepage deve começar sempre pelo selector de percurso.
+    setOpen(true);
   }, []);
 
   function choose(audience: Audience) {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, audience);
-    } catch {
-      // The modal remains functional even when storage is unavailable.
-    }
     window.location.assign(audience === "candidate" ? "/pagina-candidatos" : "/pagina-empresas");
   }
 
   function explore() {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, "explorer");
-    } catch {
-      // Continue without persistence when browser storage is blocked.
-    }
     setOpen(false);
   }
 
