@@ -29,12 +29,11 @@ export async function requirePlatformAdmin() {
       user_id: auth.user.id,
       display_name: auth.user.user_metadata?.full_name || email.split("@")[0],
       status: "active",
-      role: isOwner ? "principal" : "moderator",
       mfa_enrolled: false,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id", ignoreDuplicates: false });
   }
   const { data: member } = await admin.from("admin_members").select("user_id,display_name,status,role,mfa_enrolled").eq("user_id", auth.user.id).eq("status", "active").maybeSingle();
   if (!member) redirect("/admin/login?error=admin-required");
-  return { admin, user: auth.user, member };
+  return { admin, user: auth.user, member: { ...member, role: isOwner ? "principal" : "moderator" } };
 }
