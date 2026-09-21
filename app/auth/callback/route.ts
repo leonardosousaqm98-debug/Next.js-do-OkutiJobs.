@@ -3,7 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 function safePath(value: string | null) {
-  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
+  const next = value || "";
+  const safe = next.startsWith("/") && !next.startsWith("//");
+  return safe ? next : "/dashboard";
 }
 
 export async function GET(request: NextRequest) {

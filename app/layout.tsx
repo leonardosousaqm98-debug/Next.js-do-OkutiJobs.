@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ZoomControls } from "@/components/ZoomControls";
 import { BackButton } from "@/components/BackButton";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
   title: {
@@ -13,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt" suppressHydrationWarning><body><BackButton />{children}<ZoomControls /></body></html>;
+  return <html lang="pt" suppressHydrationWarning><body><ThemeProvider><BackButton />{children}<ZoomControls /></ThemeProvider></body></html>;
 }
