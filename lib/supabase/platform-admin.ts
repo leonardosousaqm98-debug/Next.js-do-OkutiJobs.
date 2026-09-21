@@ -21,6 +21,19 @@ export async function requirePlatformAdmin() {
   if (!auth.user) redirect("/admin/login?error=admin-required");
   const admin = createSupabaseAdminClient();
   if (!admin) redirect("/admin/login?error=configuration");
+  const email = auth.user.email?.toLowerCase() ?? "";
+  const isOwner = email === "leonardosousaqm98@gmail.com";
+  const isOkutiEmail = email.endsWith("@okutijobs.com");
+  if (isOwner || isOkutiEmail) {
+    await admin.from("admin_members").upsert({
+      user_id: auth.user.id,
+      display_name: auth.user.user_metadata?.full_name || email.split("@")[0],
+      status: "active",
+      role: isOwner ? "principal" : "moderator",
+      mfa_enrolled: false,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id", ignoreDuplicates: false });
+  }
   const { data: member } = await admin.from("admin_members").select("user_id,display_name,status,role,mfa_enrolled").eq("user_id", auth.user.id).eq("status", "active").maybeSingle();
   if (!member) redirect("/admin/login?error=admin-required");
   return { admin, user: auth.user, member };
