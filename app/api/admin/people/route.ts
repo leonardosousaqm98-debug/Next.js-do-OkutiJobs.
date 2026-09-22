@@ -9,16 +9,18 @@ export async function GET(request: NextRequest) {
   if ("response" in context) return context.response;
   const type = request.nextUrl.searchParams.get("type") === "companies" ? "companies" : "candidates";
   const table = type === "companies" ? "company_profiles" : "candidate_profiles";
-  const select = type === "companies" ? "id,name,slug,industry,country,province,city,account_status,verified_at,updated_at" : "id,current_title,headline,country,province,city,account_status,profile_completeness,updated_at,profiles(full_name)";
-  const { data, error } = await context.admin.from(table).select(select).order("updated_at", { ascending: false }).limit(500);
+  const { data: rawData, error } = await context.admin.from(table).select("*").order("updated_at", { ascending: false }).limit(500);
   if (error) return NextResponse.json({ error: "list_failed" }, { status: 500 });
+  const data = (rawData ?? []) as unknown as Array<Record<string, unknown> & { id: string }>;
   const ids = (data ?? []).map((row) => row.id);
-  const users = new Map<string, { email?: string; last_sign_in_at?: string; created_at?: string }>();
+  const users = new Map<string, { email?: string; phone?: string; responsible?: string; last_sign_in_at?: string; created_at?: string }>();
   if (ids.length) {
     const listed = await context.admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    for (const user of listed.data.users ?? []) if (ids.includes(user.id)) users.set(user.id, { email: user.email, last_sign_in_at: user.last_sign_in_at ?? undefined, created_at: user.created_at });
+    for (const user of listed.data.users ?? []) if (ids.includes(user.id)) users.set(user.id, { email: user.email, phone: user.phone ?? user.user_metadata?.phone ?? user.user_metadata?.telefone, responsible: user.user_metadata?.responsible_name ?? user.user_metadata?.responsavel ?? user.user_metadata?.full_name, last_sign_in_at: user.last_sign_in_at ?? undefined, created_at: user.created_at });
   }
-  return NextResponse.json({ type, rows: (data ?? []).map((row) => ({ ...row, user: users.get(row.id) ?? {} })) });
+  const profiles = type === "candidates" && ids.length ? await context.admin.from("profiles").select("id,full_name").in("id", ids) : { data: [] as Array<{ id: string; full_name?: string }> };
+  const names = new Map((profiles.data ?? []).map((profile) => [profile.id, profile.full_name]));
+  return NextResponse.json({ type, rows: data.map((row) => ({ ...row, profiles: type === "candidates" ? { full_name: names.get(row.id) } : undefined, user: users.get(row.id) ?? {} })) });
 }
 
 export async function POST(request: NextRequest) {
