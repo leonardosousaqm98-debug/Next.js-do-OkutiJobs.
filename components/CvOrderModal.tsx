@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 const acceptedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
 const acceptedExtensions = /\.(pdf|doc|docx)$/i;
 
 export function BuyCvTrigger({ className = "", ariaLabel = "Comprar CV", children }: { className?: string; ariaLabel?: string; children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  return <><button type="button" className={className} aria-label={ariaLabel} onClick={() => setOpen(true)}>{children ?? "Comprar CV"}</button>{open && <CvOrderModal onClose={() => setOpen(false)} />}</>;
+  const modal = open && typeof document !== "undefined" ? createPortal(<CvOrderModal onClose={() => setOpen(false)} />, document.body) : null;
+  return <><button type="button" className={className} aria-label={ariaLabel} onClick={() => setOpen(true)}>{children ?? "Comprar CV"}</button>{modal}</>;
 }
 
 export function CvOrderModal({ onClose }: { onClose: () => void }) {
