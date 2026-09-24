@@ -11,10 +11,10 @@ describe("Supabase connection", () => {
     expect(anonKey).toBeTruthy();
   });
 
-  it("builds OAuth redirects from the configured application origin", () => {
-    expect(getOAuthRedirectUrl("https://preview.example.com", "")).toBe("https://preview.example.com/auth/callback");
-    expect(getOAuthRedirectUrl("https://preview.example.com", "https://app.okutijobs.com/")).toBe("https://app.okutijobs.com/auth/callback");
-    expect(getOAuthRedirectUrl("http://localhost:3000", "https://app.okutijobs.com")).not.toContain("localhost:3000");
+  it("builds OAuth redirects from the current application origin", () => {
+    expect(getOAuthRedirectUrl("https://preview.example.com")).toBe("https://preview.example.com/auth/callback");
+    expect(getOAuthRedirectUrl("https://www.okutijobs.com")).toBe("https://www.okutijobs.com/auth/callback");
+    expect(getOAuthRedirectUrl("http://localhost:3000")).toBe("http://localhost:3000/auth/callback");
   });
 
   it("reports Google OAuth as enabled", async () => {

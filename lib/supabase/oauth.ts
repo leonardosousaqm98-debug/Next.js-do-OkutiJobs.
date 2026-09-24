@@ -1,4 +1,3 @@
-export function getOAuthRedirectUrl(origin: string, configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL) {
-  const base = configuredAppUrl?.trim() || origin;
-  return `${base.replace(/\/$/, "")}/auth/callback`;
+export function getOAuthRedirectUrl(origin: string) {
+  return `${origin.replace(/\/$/, "")}/auth/callback`;
 }
