@@ -8,14 +8,14 @@ import { GoogleLoginButton } from "@/components/GoogleLoginButton";
 
 type Mode = "login" | "signup";
 type AccountType = "candidate" | "company";
-type Provider = "linkedin" | "github";
+type Provider = "linkedin";
 
 function EyeIcon({ hidden }: { hidden: boolean }) {
   return hidden ? <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 5.3A10.7 10.7 0 0 1 12 5c5 0 8.5 4.4 9.5 6a14.7 14.7 0 0 1-3.1 3.2M6.1 6.1C3.7 7.7 2.1 10 1.5 11c1 1.6 4.5 6 10.5 6 1 0 2-.2 2.8-.4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg> : <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" strokeWidth="1.8" /><circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>;
 }
 
 function ProviderIcon({ provider }: { provider: Provider }) {
-  return <span className={`provider-icon provider-${provider}`} aria-hidden="true">{provider === "linkedin" ? "in" : "⌘"}</span>;
+	  return <span className={`provider-icon provider-${provider}`} aria-hidden="true">in</span>;
 }
 
 export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
@@ -106,10 +106,9 @@ export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
         <button type="button" role="tab" aria-selected={mode === "signup"} className={mode === "signup" ? "active" : ""} onClick={() => switchMode("signup")}>Criar conta</button>
       </div>
 
-      <div className="auth-social-row">
+      <div className="auth-social-row lamp-social-row">
         <GoogleLoginButton nextPath={nextPath} />
-        <button type="button" className="social-provider" onClick={() => unavailable("linkedin")}><ProviderIcon provider="linkedin" /><span>LinkedIn</span></button>
-        <button type="button" className="social-provider" onClick={() => unavailable("github")}><ProviderIcon provider="github" /><span>GitHub</span></button>
+        <button type="button" className="social-provider social-provider-pending" onClick={() => unavailable("linkedin")}><ProviderIcon provider="linkedin" /><span>LinkedIn <small>(brevemente)</small></span></button>
       </div>
       <div className="auth-divider"><span>ou continue com email</span></div>
 
