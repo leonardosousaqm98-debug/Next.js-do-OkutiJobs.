@@ -1,7 +1,15 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
 import { ErrorIllustration } from "@/components/ErrorIllustration";
 
 export default function NotFound() {
+  useEffect(() => {
+    const timer = window.setTimeout(() => window.location.assign("/"), 6500);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <main className="error-page" role="main">
       <div className="error-topline">
@@ -19,6 +27,7 @@ export default function NotFound() {
             <Link className="button button-orange" href="/">Voltar ao início <span>↗</span></Link>
             <Link className="error-secondary-link" href="/vagas">Explorar vagas <span>→</span></Link>
           </div>
+          <p className="error-redirect-note">A voltar ao início em alguns segundos…</p>
         </div>
         <ErrorIllustration />
       </section>
