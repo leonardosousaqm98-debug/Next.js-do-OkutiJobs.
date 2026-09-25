@@ -1,4 +1,5 @@
 import { EmailAuthForm } from "@/components/EmailAuthForm";
+import { LampLoginVisual } from "@/components/LampLoginVisual";
 
 type LoginPageProps = { searchParams: Promise<{ next?: string; error?: string }> };
 
@@ -10,11 +11,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="auth-page">
       <div className="auth-shell">
         <section className="auth-card">
-          <aside className="auth-visual" aria-label="Benefícios da OkutiJobs">
+          <aside className="auth-visual" aria-label="O próximo passo profissional começa aqui">
             <div className="visual-brand"><span>O</span> OkutiJobs</div>
-            <img className="auth-visual-image" src="/okutijobs-career-mascot-office-v2.png" alt="Profissional OkutiJobs num ambiente de escritório" />
-            <div className="visual-copy"><p className="eyebrow">O seu próximo passo</p><h1>Talento que encontra o seu lugar.</h1><p>Crie o seu espaço profissional, descubra oportunidades e avance com mais confiança.</p></div>
-            <div className="visual-orbit" aria-hidden="true" />
+            <LampLoginVisual />
+            <div className="visual-copy"><p className="eyebrow">O seu próximo passo</p><h1>Talento que encontra o seu lugar.</h1><p>Entre na sua conta e acenda novas oportunidades para a sua carreira.</p></div>
             <div className="visual-stat"><strong>+ oportunidades</strong><span>num só lugar</span></div>
           </aside>
           <div className="auth-form-panel">
