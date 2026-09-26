@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getOAuthRedirectUrl } from "@/lib/supabase/oauth";
 import { GoogleLoginButton } from "@/components/GoogleLoginButton";
 
 type Mode = "login" | "signup";
@@ -15,7 +16,7 @@ function EyeIcon({ hidden }: { hidden: boolean }) {
 }
 
 function ProviderIcon({ provider }: { provider: Provider }) {
-	  return <span className={`provider-icon provider-${provider}`} aria-hidden="true">in</span>;
+	return <span className={`provider-icon provider-${provider}`} aria-hidden="true">in</span>;
 }
 
 export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
@@ -28,6 +29,7 @@ export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [linkedinBusy, setLinkedinBusy] = useState(false);
   const [resending, setResending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -60,8 +62,18 @@ export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
     setMessage("Enviámos uma nova mensagem de confirmação. Verifique também a pasta de spam.");
   }
 
-  function unavailable(provider: Provider) {
-    setError(`${provider === "linkedin" ? "LinkedIn" : "GitHub/Apple"} estará disponível numa próxima etapa de integrações.`);
+  async function signInWithLinkedIn() {
+    setError(null);
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) return setError("A autenticação Supabase ainda não está configurada.");
+    setLinkedinBusy(true);
+    const callback = getOAuthRedirectUrl(window.location.origin);
+    const redirectTo = nextPath ? `${callback}?next=${encodeURIComponent(nextPath)}` : callback;
+    const { error: authError } = await supabase.auth.signInWithOAuth({ provider: "linkedin_oidc", options: { redirectTo } });
+    if (authError) {
+      setLinkedinBusy(false);
+      setError("Não foi possível iniciar o acesso com LinkedIn. Confirme a configuração do provider no Supabase.");
+    }
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -108,7 +120,7 @@ export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
 
       <div className="auth-social-row lamp-social-row">
         <GoogleLoginButton nextPath={nextPath} />
-        <button type="button" className="social-provider social-provider-pending" onClick={() => unavailable("linkedin")}><ProviderIcon provider="linkedin" /><span>LinkedIn <small>(brevemente)</small></span></button>
+        <button type="button" className="social-provider" onClick={signInWithLinkedIn} disabled={linkedinBusy}><ProviderIcon provider="linkedin" /><span>{linkedinBusy ? "A ligar…" : "Continuar com LinkedIn"}</span></button>
       </div>
       <div className="auth-divider"><span>ou continue com email</span></div>
 
