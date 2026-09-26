@@ -1,0 +1,3 @@
+export default function TermsPage() {
+  return <main className="simple-document-page"><a href="/login">← Voltar ao login</a><p className="eyebrow">OkutiJobs</p><h1>Termos de Utilização</h1><p>Ao utilizar a plataforma OkutiJobs, concorda em fornecer informações verdadeiras e em utilizar os serviços de forma responsável.</p><h2>Utilização da plataforma</h2><p>A OkutiJobs disponibiliza ferramentas de recrutamento, formação e orientação profissional. As oportunidades publicadas devem ser verificadas pelos utilizadores antes de qualquer decisão.</p><h2>Conta e segurança</h2><p>O utilizador é responsável por manter as suas credenciais privadas e por comunicar qualquer acesso não autorizado.</p></main>;
+}

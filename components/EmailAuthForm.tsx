@@ -31,6 +31,7 @@ export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
   const [busy, setBusy] = useState(false);
   const [linkedinBusy, setLinkedinBusy] = useState(false);
   const [resending, setResending] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,7 +85,7 @@ export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
     if (!validEmail) return setError("Introduza um email válido.");
     if (!passwordReady) return setError("A palavra-passe deve ter pelo menos 8 caracteres.");
     if (!passwordsMatch) return setError("As palavras-passe não coincidem.");
-    const supabase = createSupabaseBrowserClient();
+    const supabase = createSupabaseBrowserClient(rememberMe);
     if (!supabase) return setError("A autenticação Supabase ainda não está configurada.");
     setBusy(true);
     const result = mode === "login"
@@ -127,11 +128,12 @@ export function EmailAuthForm({ nextPath }: { nextPath?: string }) {
       <AnimatePresence mode="wait" initial={false}>
         <motion.form key={mode} className="modern-email-form" onSubmit={submit} noValidate initial={{ opacity: 0, x: mode === "login" ? -10 : 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: mode === "login" ? 10 : -10 }} transition={{ duration: 0.18 }}>
           {mode === "signup" ? <div className="account-choice"><p>Vou entrar como</p><div className="account-choice-grid"><button type="button" className={accountType === "candidate" ? "selected" : ""} onClick={() => setAccountType("candidate")}><span>◎</span><strong>Candidato</strong><small>Encontrar oportunidades</small></button><button type="button" className={accountType === "company" ? "selected" : ""} onClick={() => setAccountType("company")}><span>▣</span><strong>Empresa</strong><small>Publicar e gerir vagas</small></button></div></div> : null}
-          <label className={`floating-field ${email ? "filled" : ""} ${email && !validEmail ? "invalid" : ""}`}><input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /><span>Email</span>{email ? <b aria-hidden="true">{validEmail ? "✓" : "!"}</b> : null}</label>
-          <label className={`floating-field ${password ? "filled" : ""} ${password && !passwordReady ? "invalid" : ""}`}><input type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} required /><span>Palavra-passe</span><button type="button" className="password-toggle" aria-label={showPassword ? "Ocultar palavra-passe" : "Mostrar palavra-passe"} onClick={() => setShowPassword((value) => !value)}><EyeIcon hidden={!showPassword} /></button></label>
+          <label className={`floating-field ${email ? "filled" : ""} ${email && !validEmail ? "invalid" : ""}`}><input id="auth-email" name="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required aria-invalid={Boolean(email && !validEmail)} /><span>Email</span>{email ? <b aria-hidden="true">{validEmail ? "✓" : "!"}</b> : null}</label>
+          <label className={`floating-field ${password ? "filled" : ""} ${password && !passwordReady ? "invalid" : ""}`}><input id="auth-password" name="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} required aria-invalid={Boolean(password && !passwordReady)} /><span>Palavra-passe</span><button type="button" className="password-toggle" aria-label={showPassword ? "Ocultar palavra-passe" : "Mostrar palavra-passe"} onClick={() => setShowPassword((value) => !value)}><EyeIcon hidden={!showPassword} /></button></label>
           {mode === "signup" ? <label className={`floating-field ${confirmation ? "filled" : ""} ${confirmation && !passwordsMatch ? "invalid" : ""}`}><input type={showConfirmation ? "text" : "password"} autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} minLength={8} required /><span>Confirmar palavra-passe</span><button type="button" className="password-toggle" aria-label={showConfirmation ? "Ocultar confirmação" : "Mostrar confirmação"} onClick={() => setShowConfirmation((value) => !value)}><EyeIcon hidden={!showConfirmation} /></button></label> : null}
           {mode === "signup" && password ? <div className="password-status"><span className={passwordReady ? "ready" : ""}>{passwordReady ? "✓" : "•"} {passwordHint}</span><span className={passwordsMatch && confirmation ? "ready" : ""}>{passwordsMatch && confirmation ? "✓ Palavras-passe coincidem" : "• Confirme a palavra-passe"}</span></div> : null}
-          <button className="auth-submit modern-submit" type="submit" disabled={busy}>{busy ? <><span className="button-spinner" />A processar…</> : mode === "login" ? <>Entrar na conta <span>→</span></> : <>Criar a minha conta <span>→</span></>}</button>
+          {mode === "login" ? <div className="auth-options"><label><input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} /> <span>Lembrar-me</span></label><a href="/recuperar">Esqueci a palavra-passe</a></div> : null}
+          <button className="auth-submit modern-submit" type="submit" disabled={busy || linkedinBusy}>{busy ? <><span className="button-spinner" />A processar…</> : mode === "login" ? <>Entrar na conta <span>→</span></> : <>Criar a minha conta <span>→</span></>}</button>
           {mode === "login" ? <button type="button" className="resend-link" onClick={resendConfirmation} disabled={resending}>{resending ? "A reenviar…" : "Não recebeu o email de confirmação? Reenviar"}</button> : null}
           {error ? <p className="auth-error" role="alert">{error}</p> : null}
           {message ? <p className="success-message" role="status">{message}</p> : null}

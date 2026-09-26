@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="lamp-auth-grid-glow" aria-hidden="true" />
       <header className="lamp-auth-heading">
         <a className="lamp-auth-back" href="/" aria-label="Voltar ao site">‹</a>
-        <h1>Animated <span>Lamp Login</span></h1>
+        <h1>Acenda <span>o próximo passo</span></h1>
         <p>Acenda novas oportunidades para a sua carreira.</p>
       </header>
 
@@ -31,8 +31,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="lamp-auth-panel-inner">
             <div className="lamp-auth-welcome">
               <p className="lamp-kicker">Acesso à plataforma</p>
-              <h2>Welcome Back</h2>
-              <p>Entre nos seus detalhes para aceder à sua conta.</p>
+              <h2>Bem-vindo de volta</h2>
+              <p>Entre na sua conta para continuar.</p>
             </div>
             {accessMessage ? <p className="auth-access-message" role="alert">{accessMessage}</p> : null}
             <EmailAuthForm nextPath={nextPath} />
