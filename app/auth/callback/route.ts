@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
   let destination = requestedNext;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const publicOrigin = requestUrl.origin.replace(/\/$/, "");
+  // NEXT_PUBLIC_APP_URL is the documented public-origin fallback for OAuth.
+  const publicOrigin = (process.env.NEXT_PUBLIC_APP_URL || requestUrl.origin).replace(/\/$/, "");
   const response = NextResponse.redirect(new URL(destination, publicOrigin));
 
   if (code && url && anonKey) {
