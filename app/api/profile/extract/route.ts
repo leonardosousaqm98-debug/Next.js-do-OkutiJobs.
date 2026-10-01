@@ -1,26 +1,88 @@
 import { NextResponse } from "next/server";
+import { spawn } from "node:child_process";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { invokeLlm } from "@/lib/llm";
 
 export const runtime = "nodejs";
+
+const MAX_TEXT = 120_000;
+
+async function extractWithPdftotext(buffer: Buffer) {
+  return await new Promise<string>((resolve, reject) => {
+    const child = spawn("pdftotext", ["-layout", "-", "-"], { stdio: ["pipe", "pipe", "pipe"] });
+    const chunks: Buffer[] = [];
+    const errors: Buffer[] = [];
+    child.stdout.on("data", (chunk: Buffer) => chunks.push(chunk));
+    child.stderr.on("data", (chunk: Buffer) => errors.push(chunk));
+    child.once("error", reject);
+    child.once("close", (code) => code === 0 ? resolve(Buffer.concat(chunks).toString("utf8")) : reject(new Error(Buffer.concat(errors).toString("utf8") || `pdftotext terminou com código ${code}`)));
+    child.stdin.end(buffer);
+  });
+}
+
+async function extractPdfText(url: string) {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error(`Não foi possível descarregar o CV (${response.status}).`);
+  const buffer = Buffer.from(await response.arrayBuffer());
+  let rawText = "";
+  try {
+    rawText = await extractWithPdftotext(buffer);
+  } catch {
+    // Vercel pode não disponibilizar o binário; nesse caso usamos o parser JS.
+    // Importar directamente o módulo de execução evita o modo de diagnóstico do entrypoint.
+    // @ts-expect-error pdf-parse 1.x não expõe declarações para este subpath.
+    const parserModule = await import("pdf-parse/lib/pdf-parse.js");
+    const pdfParse = parserModule.default ?? parserModule;
+    const parsed = await pdfParse(buffer);
+    rawText = parsed.text;
+  }
+  const text = rawText.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").trim();
+  if (text.length < 40) throw new Error("O PDF não contém texto suficiente para análise automática.");
+  return text.slice(0, MAX_TEXT);
+}
 
 export async function POST() {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return NextResponse.json({ error: "Supabase não está configurado." }, { status: 503 });
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) return NextResponse.json({ error: "É necessário iniciar sessão." }, { status: 401 });
-  const { data: document, error } = await supabase.from("candidate_documents").select("storage_path, original_name, mime_type").eq("candidate_id", authData.user.id).eq("document_type", "cv").order("created_at", { ascending: false }).limit(1).maybeSingle();
+
+  const { data: document, error } = await supabase
+    .from("candidate_documents")
+    .select("storage_path, original_name, mime_type")
+    .eq("candidate_id", authData.user.id)
+    .eq("document_type", "cv")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   if (error || !document) return NextResponse.json({ error: "Carregue primeiro um CV PDF, DOC ou DOCX privado." }, { status: 400 });
+
   const { data: signed, error: signedError } = await supabase.storage.from("candidate-documents").createSignedUrl(document.storage_path, 600);
   if (signedError || !signed?.signedUrl) return NextResponse.json({ error: "Não foi possível preparar o CV para análise." }, { status: 400 });
+
   try {
+    // O caminho principal envia texto já extraído. Isto evita falhas do provider ao
+    // tentar interpretar file_url e permite auditar exactamente o conteúdo enviado.
+    let sourceText = "";
+    if (document.mime_type === "application/pdf" || document.original_name.toLowerCase().endsWith(".pdf")) {
+      sourceText = await extractPdfText(signed.signedUrl);
+    }
+
+    const userContent = sourceText
+      ? `Importa automaticamente os dados deste CV para o perfil internacional OkutiJobs. Mantém o idioma original dos nomes próprios, empresas e cursos.\n\nTEXTO BRUTO EXTRAÍDO DO PDF:\n${sourceText}`
+      : `Importa automaticamente os dados deste CV para o perfil internacional OkutiJobs. Mantém o idioma original dos nomes próprios, empresas e cursos. O documento original está disponível em ${signed.signedUrl}`;
+
     const extracted = await invokeLlm([
-      { role: "system", content: "És um especialista em recrutamento internacional. Analisa o documento CV anexado e extrai apenas informação explicitamente presente. Nunca inventes datas, empresas, cargos ou contactos. Quando um campo não existir, devolve string vazia ou lista vazia. Converte experiências, formações, certificações, competências e idiomas para as estruturas pedidas. Responde apenas no JSON schema." },
-      { role: "user", content: [{ type: "text", text: "Importa automaticamente os dados deste CV para o perfil internacional OkutiJobs. Mantém o idioma original dos nomes próprios, empresas e cursos." }, { type: "file_url", file_url: { url: signed.signedUrl, mime_type: document.mime_type || "application/pdf" } }] },
+      {
+        role: "system",
+        content: "És um especialista em recrutamento internacional. Analisa apenas informação explicitamente presente. Nunca inventes datas, empresas, cargos ou contactos. Quando um campo não existir, devolve string vazia ou lista vazia. Converte experiências, formações, certificações, competências e idiomas para as estruturas pedidas. Responde apenas no JSON schema.",
+      },
+      { role: "user", content: userContent },
     ]);
-    return NextResponse.json({ ok: true, fileName: document.original_name, extracted });
+    return NextResponse.json({ ok: true, fileName: document.original_name, extractionMode: sourceText ? "pdf-text" : "document-reference", extracted });
   } catch (reason: unknown) {
     console.error("CV extraction failed", reason);
-    return NextResponse.json({ error: "A importação automática não está disponível neste momento. Pode preencher o perfil manualmente." }, { status: 502 });
+    const message = reason instanceof Error ? reason.message : "erro desconhecido";
+    return NextResponse.json({ error: `A importação automática falhou: ${message}` }, { status: 502 });
   }
 }
