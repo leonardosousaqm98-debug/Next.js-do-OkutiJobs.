@@ -1,0 +1,20 @@
+-- Campos estruturados do anúncio de vaga para matching e notificações.
+alter table public.jobs add column if not exists industry text;
+alter table public.jobs add column if not exists functional_area text;
+alter table public.jobs add column if not exists seniority_level text;
+alter table public.jobs add column if not exists nationalities jsonb not null default '[]'::jsonb;
+alter table public.jobs add column if not exists passport_requirements jsonb not null default '[]'::jsonb;
+alter table public.jobs add column if not exists age_min integer;
+alter table public.jobs add column if not exists age_max integer;
+alter table public.jobs add column if not exists driving_categories jsonb not null default '[]'::jsonb;
+alter table public.jobs add column if not exists required_certifications jsonb not null default '[]'::jsonb;
+alter table public.jobs add column if not exists hard_skills jsonb not null default '[]'::jsonb;
+alter table public.jobs add column if not exists languages jsonb not null default '[]'::jsonb;
+alter table public.jobs add column if not exists salary_currency text not null default 'AOA';
+alter table public.jobs add column if not exists salary_min numeric;
+alter table public.jobs add column if not exists salary_max numeric;
+alter table public.jobs add column if not exists salary_visibility text not null default 'confidential' check (salary_visibility in ('public','confidential','negotiable'));
+alter table public.jobs add column if not exists benefits jsonb not null default '[]'::jsonb;
+create index if not exists jobs_industry_idx on public.jobs (industry);
+create index if not exists jobs_functional_area_idx on public.jobs (functional_area);
+create index if not exists jobs_seniority_idx on public.jobs (seniority_level);

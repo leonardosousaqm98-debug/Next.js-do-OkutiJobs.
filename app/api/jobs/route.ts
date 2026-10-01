@@ -8,6 +8,8 @@ function list(value: string | null) {
 }
 
 function clean(value: unknown, max = 5000) { return typeof value === "string" ? value.trim().slice(0, max) : ""; }
+function jsonList(value: unknown) { return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean).slice(0, 80) : []; }
+function intOrNull(value: unknown) { const number = Number(value); return Number.isInteger(number) && number >= 0 ? number : null; }
 function slugify(value: string) { return value.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 90); }
 
 export async function POST(request: NextRequest) {
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
   if (title.length < 3 || description.length < 20) return NextResponse.json({ error: "Indique o título e uma descrição completa da vaga." }, { status: 400 });
   const baseSlug = slugify(title) || "vaga";
   const slug = `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`;
-  const { data, error } = await supabase.from("jobs").insert({ company_id: auth.user.id, title, slug, description, requirements: clean(body.requirements, 8000) || null, country: clean(body.country, 100) || "Angola", province: clean(body.province, 100) || null, city: clean(body.city, 100) || null, work_mode: clean(body.work_mode, 60) || null, contract_type: clean(body.contract_type, 60) || null, status: "draft", publication_mode: "public" }).select("id,slug,title,status").single();
+  const { data, error } = await supabase.from("jobs").insert({ company_id: auth.user.id, title, slug, description, requirements: clean(body.requirements, 8000) || null, country: clean(body.country, 100) || "Angola", province: clean(body.province, 100) || null, city: clean(body.city, 100) || null, work_mode: clean(body.work_mode, 60) || null, contract_type: clean(body.contract_type, 60) || null, industry: clean(body.industry, 120) || null, functional_area: clean(body.functional_area, 120) || null, seniority_level: clean(body.seniority_level, 120) || null, nationalities: jsonList(body.nationalities), passport_requirements: jsonList(body.passport_requirements), age_min: intOrNull(body.age_min), age_max: intOrNull(body.age_max), driving_categories: jsonList(body.driving_categories), required_certifications: jsonList(body.required_certifications), hard_skills: jsonList(body.hard_skills), languages: jsonList(body.languages), salary_currency: clean(body.salary_currency, 10) || "AOA", salary_min: Number.isFinite(Number(body.salary_min)) && Number(body.salary_min) >= 0 ? Number(body.salary_min) : null, salary_max: Number.isFinite(Number(body.salary_max)) && Number(body.salary_max) >= 0 ? Number(body.salary_max) : null, salary_visibility: ["public", "confidential", "negotiable"].includes(clean(body.salary_visibility, 20)) ? clean(body.salary_visibility, 20) : "confidential", benefits: jsonList(body.benefits), status: "draft", publication_mode: "public" }).select("id,slug,title,status").single();
   if (error) return NextResponse.json({ error: "Não foi possível guardar a vaga.", detail: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, job: data });
 }
