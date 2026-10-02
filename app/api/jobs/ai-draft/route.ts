@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+export const runtime = "nodejs";
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+const MAX_TEXT = 80_000;
+
 type LlmResult = { choices?: Array<{ message?: { content?: string } }> };
+
 const schema = {
   type: "object", additionalProperties: false,
   properties: {
@@ -9,20 +14,68 @@ const schema = {
   }, required: ["title","industry","functionalArea","seniority","workMode","contractType","country","province","city","nationalities","passportRequirements","ageMin","ageMax","drivingCategories","certifications","hardSkills","languages","salaryCurrency","salaryMin","salaryMax","benefits","description","requirements"],
 } as const;
 
+async function pdfText(buffer: Buffer) {
+  const { spawn } = await import("node:child_process");
+  return await new Promise<string>((resolve, reject) => {
+    const child = spawn("pdftotext", ["-layout", "-", "-"], { stdio: ["pipe", "pipe", "pipe"] });
+    const output: Buffer[] = []; const errors: Buffer[] = [];
+    child.stdout.on("data", (chunk: Buffer) => output.push(chunk));
+    child.stderr.on("data", (chunk: Buffer) => errors.push(chunk));
+    child.once("error", reject);
+    child.once("close", code => code === 0 ? resolve(Buffer.concat(output).toString("utf8")) : reject(new Error(Buffer.concat(errors).toString("utf8"))));
+    child.stdin.end(buffer);
+  });
+}
+
+async function extractDocument(file: File) {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".pdf") || file.type === "application/pdf") {
+    try {
+      return await pdfText(buffer);
+    } catch {
+      // @ts-expect-error pdf-parse 1.x subpath has no declaration
+      const parserModule = await import("pdf-parse/lib/pdf-parse.js");
+      const parser = parserModule.default ?? parserModule;
+      return (await parser(buffer)).text as string;
+    }
+  }
+  if (name.endsWith(".docx") || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    const mammoth = await import("mammoth");
+    return (await mammoth.extractRawText({ buffer })).value;
+  }
+  if (name.endsWith(".txt") || file.type.startsWith("text/")) return buffer.toString("utf8");
+  throw new Error("Formato não suportado. Carregue PDF, DOCX ou TXT.");
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return NextResponse.json({ error: "Supabase não está configurado." }, { status: 503 });
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return NextResponse.json({ error: "É necessário iniciar sessão como empresa." }, { status: 401 });
-  const body = await request.json().catch(() => ({})) as { brief?: unknown };
-  const brief = typeof body.brief === "string" ? body.brief.trim().slice(0, 12000) : "";
-  if (brief.length < 20) return NextResponse.json({ error: "Descreva pelo menos a função, sector ou requisitos para a IA preencher o anúncio." }, { status: 400 });
+
+  const form = await request.formData().catch(() => null);
+  const briefValue = form?.get("brief");
+  const brief = typeof briefValue === "string" ? briefValue.trim() : "";
+  const fileValue = form?.get("document");
+  let documentText = "";
+  let fileName = "";
+  if (fileValue instanceof File && fileValue.size > 0) {
+    if (fileValue.size > MAX_FILE_BYTES) return NextResponse.json({ error: "O documento não pode ultrapassar 10 MB." }, { status: 400 });
+    fileName = fileValue.name;
+    try { documentText = (await extractDocument(fileValue)).replace(/\u0000/g, "").trim().slice(0, MAX_TEXT); }
+    catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Não foi possível ler o documento." }, { status: 400 }); }
+  }
+  const source = [brief, documentText ? `DOCUMENTO DE REQUISITOS (${fileName}):\n${documentText}` : ""].filter(Boolean).join("\n\n");
+  if (source.length < 20) return NextResponse.json({ error: "Escreva um briefing ou carregue um documento com os requisitos da vaga." }, { status: 400 });
   const baseUrl = process.env.BUILT_IN_FORGE_API_URL?.replace(/\/$/, "") || "https://forge.manus.im";
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "A chave de IA ainda não está configurada no ambiente de produção." }, { status: 503 });
-  const response = await fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ messages: [{ role: "system", content: "És um especialista em recrutamento em Angola e crias anúncios profissionais em português. Extrai apenas informação que esteja explícita ou seja uma inferência segura. Quando faltar informação, devolve string vazia ou array vazio. Não inventes salários, certificações ou requisitos." }, { role: "user", content: `Estrutura o seguinte briefing de uma vaga em campos de anúncio. Responde apenas JSON válido conforme o schema.\n\n${brief}` }], response_format: { type: "json_schema", json_schema: { name: "job_ad_draft", strict: true, schema } } }) });
+  const response = await fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ messages: [{ role: "system", content: "És um especialista em recrutamento em Angola. Extrai requisitos explícitos de briefings e documentos de vaga, sem inventar dados. Organiza tudo em português nos campos pedidos. Quando faltar informação, devolve string vazia ou array vazio. Responde apenas JSON conforme o schema." }, { role: "user", content: `Preenche o anúncio estruturado a partir desta informação:\n\n${source}` }], response_format: { type: "json_schema", json_schema: { name: "job_ad_draft", strict: true, schema } } }) });
   if (!response.ok) return NextResponse.json({ error: `A IA não conseguiu preparar o anúncio (${response.status}).` }, { status: 502 });
-  const result = await response.json() as LlmResult; const content = result.choices?.[0]?.message?.content;
+  const result = await response.json() as LlmResult;
+  const content = result.choices?.[0]?.message?.content;
   if (!content) return NextResponse.json({ error: "A IA não devolveu um anúncio estruturado." }, { status: 502 });
-  try { return NextResponse.json({ ok: true, draft: JSON.parse(content) }); } catch { return NextResponse.json({ error: "A resposta da IA não pôde ser convertida em campos." }, { status: 502 }); }
+  try { return NextResponse.json({ ok: true, source: fileName ? "document" : "brief", fileName, draft: JSON.parse(content) }); }
+  catch { return NextResponse.json({ error: "A resposta da IA não pôde ser convertida em campos." }, { status: 502 }); }
 }
