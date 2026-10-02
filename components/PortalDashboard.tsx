@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export type CompanyJobStat = { id: string; title: string; status: string; applications: number };
 
@@ -33,6 +34,32 @@ const companyServices: CompanyService[] = [
   { icon: "◎", title: "Programa de estágios", description: "Crie uma entrada de talento jovem com objectivos e acompanhamento.", href: "/pagina-empresas", tone: "service-green" },
 ];
 
+function CompanyProfileMenu() {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function signOut() {
+    setBusy(true);
+    const supabase = createSupabaseBrowserClient();
+    await supabase?.auth.signOut();
+    window.location.assign("/");
+  }
+
+  return <div className="company-profile-menu">
+    <button type="button" className="company-profile-trigger" aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((current) => !current)}>
+      <span className="company-profile-avatar" aria-hidden="true">◌</span>
+      <span><small>Conta empresarial</small><strong>Meu perfil</strong></span>
+      <span className="company-profile-chevron" aria-hidden="true">{open ? "↑" : "↓"}</span>
+    </button>
+    {open ? <div className="company-profile-dropdown" role="menu">
+      <Link href="/empresa/perfil" role="menuitem" onClick={() => setOpen(false)}><span>◈</span><span><strong>Meu perfil</strong><small>Dados da organização</small></span></Link>
+      <a href="mailto:comercial@okutijobs.com?subject=Ajuda%20na%20conta%20empresarial" role="menuitem"><span>✉</span><span><strong>Contactar a equipa de apoio</strong><small>comercial@okutijobs.com</small></span></a>
+      <a href="https://wa.me/244936161636?text=Olá%20OkutiJobs,%20preciso%20de%20apoio%20na%20minha%20conta%20empresarial." target="_blank" rel="noreferrer" role="menuitem"><span>◉</span><span><strong>Falar pelo WhatsApp</strong><small>Resposta da equipa comercial</small></span></a>
+      <button type="button" className="company-profile-logout" role="menuitem" onClick={signOut} disabled={busy}><span>↪</span><span><strong>{busy ? "A terminar sessão…" : "Sair"}</strong><small>Fechar a conta empresarial</small></span></button>
+    </div> : null}
+  </div>;
+}
+
 function CompanyAccountHeader() {
   return <header className="company-account-header">
     <Link href="/" className="brand" aria-label="OkutiJobs — início"><span className="brand-lockup"><span className="brand-symbol"><img src="/icon.png" alt="" width="34" height="34" /></span><span className="brand-word">Okuti<span>Jobs</span></span></span></Link>
@@ -41,7 +68,7 @@ function CompanyAccountHeader() {
       <Link href="/formacoes"><span>✦</span><strong>Formações corporativas</strong><small>Ver catálogo completo</small></Link>
       <a href="#company-credits"><span>◇</span><strong>Comprar crédito</strong><small>Expandir o seu acesso</small></a>
     </nav>
-    <div className="company-account-actions"><Link href="/empresa">Painel</Link><Link className="button button-dark" href="/empresa">Área da empresa <span>↗</span></Link></div>
+    <div className="company-account-actions"><Link href="/empresa">Painel</Link><CompanyProfileMenu /></div>
   </header>;
 }
 
