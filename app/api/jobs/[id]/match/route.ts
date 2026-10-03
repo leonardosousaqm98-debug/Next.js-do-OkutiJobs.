@@ -10,10 +10,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return NextResponse.json({ error: "Sessão necessária." }, { status: 401 });
   const { id } = await context.params;
-  const { data: job, error: jobError } = await admin.from("jobs").select("id,slug,company_id,title,status,country,province,city,work_mode,seniority_level,functional_area,hard_skills,required_certifications,languages,salary_min,salary_max").eq("id", id).maybeSingle();
+  const { data: job, error: jobError } = await admin.from("jobs").select("id,slug,company_id,title,status,country,province,city,work_mode,contract_type,availability,seniority_level,functional_area,nationalities,driving_categories,hard_skills,required_certifications,languages,salary_min,salary_max").eq("id", id).maybeSingle();
   if (jobError || !job || job.company_id !== auth.user.id) return NextResponse.json({ error: "Vaga não encontrada ou sem autorização." }, { status: 403 });
   if (job.status !== "published") return NextResponse.json({ error: "As notificações só são enviadas para vagas publicadas." }, { status: 400 });
-  const { data: candidates, error: candidateError } = await admin.from("candidate_profiles").select("id,country,province,city,seniority_level,functional_areas,skills,hard_skills,certifications,certifications_structured,languages,language_items,driving_categories,nationality,salary_min_amount,salary_max_amount,preferred_work_mode").eq("visibility", "public").eq("open_to_work", true).limit(1000);
+  const { data: candidates, error: candidateError } = await admin.from("candidate_profiles").select("id,country,province,municipality,city,seniority_level,functional_areas,skills,hard_skills,certifications,certifications_structured,languages,language_items,driving_categories,nationality,salary_min_amount,salary_max_amount,preferred_work_mode,contract_type,availability,willing_to_relocate").eq("visibility", "public").eq("open_to_work", true).limit(1000);
   if (candidateError) return NextResponse.json({ error: "Não foi possível carregar os candidatos." }, { status: 500 });
   const matches = (candidates ?? []).map((candidate) => ({ candidate, result: calculateJobMatch(job, candidate) })).filter(({ result }) => result.score >= 50);
   let sent = 0;
