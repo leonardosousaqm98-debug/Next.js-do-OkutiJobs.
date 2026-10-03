@@ -68,11 +68,15 @@ export async function POST(request: NextRequest) {
   }
   const source = [brief, documentText ? `DOCUMENTO DE REQUISITOS (${fileName}):\n${documentText}` : ""].filter(Boolean).join("\n\n");
   if (source.length < 20) return NextResponse.json({ error: "Escreva um briefing ou carregue um documento com os requisitos da vaga." }, { status: 400 });
-  const baseUrl = process.env.BUILT_IN_FORGE_API_URL?.replace(/\/$/, "") || "https://forge.manus.im";
+  const baseUrl = process.env.BUILT_IN_FORGE_API_URL?.replace(/\/$/, "") || "https://forge.manus.ai";
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "A chave de IA ainda não está configurada no ambiente de produção." }, { status: 503 });
   const response = await fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ messages: [{ role: "system", content: "És um especialista em recrutamento em Angola. Extrai requisitos explícitos de briefings e documentos de vaga, sem inventar dados. Organiza tudo em português nos campos pedidos. Quando faltar informação, devolve string vazia ou array vazio. Responde apenas JSON conforme o schema." }, { role: "user", content: `Preenche o anúncio estruturado a partir desta informação:\n\n${source}` }], response_format: { type: "json_schema", json_schema: { name: "job_ad_draft", strict: true, schema } } }) });
-  if (!response.ok) return NextResponse.json({ error: `A IA não conseguiu preparar o anúncio (${response.status}).` }, { status: 502 });
+  if (!response.ok) {
+    const providerError = await response.text().catch(() => "");
+    console.error("[job-ai-draft] provider error", response.status, providerError.slice(0, 500));
+    return NextResponse.json({ error: `A IA não conseguiu preparar o anúncio (${response.status}). Tente novamente em alguns segundos.` }, { status: 502 });
+  }
   const result = await response.json() as LlmResult;
   const content = result.choices?.[0]?.message?.content;
   if (!content) return NextResponse.json({ error: "A IA não devolveu um anúncio estruturado." }, { status: 502 });
