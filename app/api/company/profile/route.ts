@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-const fields = ["name", "legal_name", "nif", "description", "industry", "website_url", "country", "province", "municipality", "city", "address", "contact_phone", "contact_email", "employee_count", "company_size", "founded_year", "linkedin_url"] as const;
+const fields = ["name", "legal_name", "nif", "description", "industry", "website_url", "country", "province", "municipality", "city", "address", "contact_phone", "contact_email", "employee_count", "company_size", "founded_year", "linkedin_url", "slug"] as const;
 type Field = (typeof fields)[number];
 function text(value: unknown, max = 5000) { return typeof value === "string" ? value.trim().slice(0, max) : ""; }
 function optionalInt(value: unknown, min: number, max: number) { const n = Number(value); return Number.isInteger(n) && n >= min && n <= max ? n : null; }
+function slug(value: string, userId: string) { const base = value.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 70) || "empresa"; return `${base}-${userId.slice(0, 8)}`; }
 
 async function getUser() {
   const supabase = await createSupabaseServerClient();
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
   const payload: Record<string, unknown> = {
     id: user.id,
     name,
+    slug: slug(name, user.id),
     legal_name: text(body.legal_name, 200) || null,
     nif: text(body.nif, 80) || null,
     description: text(body.description, 5000) || null,

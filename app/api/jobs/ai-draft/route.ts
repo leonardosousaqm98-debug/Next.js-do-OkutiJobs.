@@ -7,6 +7,24 @@ const MAX_TEXT = 80_000;
 
 type LlmResult = { choices?: Array<{ message?: { content?: string } }> };
 
+function parseDraft(content: unknown) {
+  if (content && typeof content === "object") return content as Record<string, unknown>;
+  if (typeof content !== "string") return null;
+  const cleaned = content.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  try {
+    const parsed = JSON.parse(cleaned);
+    return parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : null;
+  } catch {
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start < 0 || end <= start) return null;
+    try {
+      const parsed = JSON.parse(cleaned.slice(start, end + 1));
+      return parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : null;
+    } catch { return null; }
+  }
+}
+
 const schema = {
   type: "object", additionalProperties: false,
   properties: {
@@ -71,15 +89,21 @@ export async function POST(request: NextRequest) {
   const baseUrl = process.env.BUILT_IN_FORGE_API_URL?.replace(/\/$/, "") || "https://forge.manus.ai";
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "A chave de IA ainda não está configurada no ambiente de produção." }, { status: 503 });
-  const response = await fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ messages: [{ role: "system", content: "És um especialista em recrutamento em Angola. Extrai requisitos explícitos de briefings e documentos de vaga, sem inventar dados. Organiza tudo em português nos campos pedidos. Quando faltar informação, devolve string vazia ou array vazio. Responde apenas JSON conforme o schema." }, { role: "user", content: `Preenche o anúncio estruturado a partir desta informação:\n\n${source}` }], response_format: { type: "json_schema", json_schema: { name: "job_ad_draft", strict: true, schema } } }) });
+  const messages = [{ role: "system" as const, content: "És um especialista em recrutamento em Angola. Extrai requisitos explícitos de briefings e documentos de vaga, sem inventar dados. Organiza tudo em português nos campos pedidos. Quando faltar informação, devolve string vazia ou array vazio. Responde apenas JSON." }, { role: "user" as const, content: `Preenche o anúncio estruturado a partir desta informação:\n\n${source}` }];
+  const requestLlm = (structured: boolean) => fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ messages, ...(structured ? { response_format: { type: "json_schema", json_schema: { name: "job_ad_draft", strict: true, schema } } } : { response_format: { type: "json_object" } }) }) });
+  let response = await requestLlm(true);
+  if (!response.ok) {
+    const firstError = await response.text().catch(() => "");
+    console.warn("[job-ai-draft] structured request failed", response.status, firstError.slice(0, 300));
+    response = await requestLlm(false);
+  }
   if (!response.ok) {
     const providerError = await response.text().catch(() => "");
     console.error("[job-ai-draft] provider error", response.status, providerError.slice(0, 500));
     return NextResponse.json({ error: `A IA não conseguiu preparar o anúncio (${response.status}). Tente novamente em alguns segundos.` }, { status: 502 });
   }
   const result = await response.json() as LlmResult;
-  const content = result.choices?.[0]?.message?.content;
-  if (!content) return NextResponse.json({ error: "A IA não devolveu um anúncio estruturado." }, { status: 502 });
-  try { return NextResponse.json({ ok: true, source: fileName ? "document" : "brief", fileName, draft: JSON.parse(content) }); }
-  catch { return NextResponse.json({ error: "A resposta da IA não pôde ser convertida em campos." }, { status: 502 }); }
+  const draft = parseDraft(result.choices?.[0]?.message?.content);
+  if (!draft) return NextResponse.json({ error: "A IA respondeu, mas não devolveu campos reconhecíveis. Tente escrever um briefing mais directo." }, { status: 502 });
+  return NextResponse.json({ ok: true, source: fileName ? "document" : "brief", fileName, draft });
 }
