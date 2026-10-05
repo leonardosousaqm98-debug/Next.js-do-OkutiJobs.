@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "A chave de IA ainda não está configurada no ambiente de produção." }, { status: 503 });
   const messages = [{ role: "system" as const, content: "És um especialista em recrutamento em Angola. Extrai requisitos explícitos de briefings e documentos de vaga, sem inventar dados. Organiza tudo em português nos campos pedidos. Quando faltar informação, devolve string vazia ou array vazio. Responde apenas JSON." }, { role: "user" as const, content: `Preenche o anúncio estruturado a partir desta informação:\n\n${source}` }];
-  const requestLlm = (structured: boolean) => fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ messages, ...(structured ? { response_format: { type: "json_schema", json_schema: { name: "job_ad_draft", strict: true, schema } } } : { response_format: { type: "json_object" } }) }) });
+  const requestLlm = (structured: boolean) => fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ model: "gpt-5-mini", messages, max_completion_tokens: 4000, ...(structured ? { response_format: { type: "json_schema", json_schema: { name: "job_ad_draft", strict: true, schema } } } : { response_format: { type: "json_object" } }) }) });
   let response = await requestLlm(true);
   if (!response.ok) {
     const firstError = await response.text().catch(() => "");
