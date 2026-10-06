@@ -31,12 +31,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return entries;
 
-  const { data } = await supabase
-    .from("jobs")
-    .select("slug,updated_at,published_at")
-    .not("published_at", "is", null);
+  let publicJobs: Array<{ slug?: string; updated_at?: string | null; published_at?: string | null }> = [];
+  try {
+    const response = await fetch(`${baseUrl}/api/jobs`, { cache: "no-store" });
+    if (response.ok) {
+      const payload = (await response.json()) as { jobs?: Array<{ slug?: string; updated_at?: string | null; published_at?: string | null }> };
+      publicJobs = payload.jobs ?? [];
+    }
+  } catch {
+    publicJobs = [];
+  }
 
-  for (const job of data ?? []) {
+  for (const job of publicJobs) {
     if (!job.slug) continue;
     entries.push({
       url: `${baseUrl}/vagas/${encodeURIComponent(job.slug)}`,
