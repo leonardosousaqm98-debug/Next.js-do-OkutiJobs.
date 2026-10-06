@@ -6,8 +6,9 @@ const text = (value: unknown, max: number) => typeof value === "string" ? value.
 const escapeHtml = (value: string) => value.replace(/[&<>\"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" })[character] || character);
 
 export async function POST(request: Request) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "O serviço de email está temporariamente indisponível." }, { status: 503 });
+  const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API_TOKEN;
+  if (!apiKey) return NextResponse.json({ error: "O serviço de email não está configurado neste deployment. Adicione RESEND_API_KEY em Production e faça um novo deployment.", code: "EMAIL_PROVIDER_NOT_CONFIGURED" }, { status: 503 });
+  if (!/^re_[A-Za-z0-9_]+$/.test(apiKey)) return NextResponse.json({ error: "A chave do Resend configurada neste deployment não tem um formato válido. Gere uma nova chave e publique novamente.", code: "EMAIL_PROVIDER_KEY_INVALID" }, { status: 503 });
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
   const company = text(body?.company, 160); const contact = text(body?.contact, 160).toLowerCase(); const phone = text(body?.phone, 60); const location = text(body?.location, 160); const description = text(body?.description, 12000); const fileName = text(body?.fileName, 160); const fileData = text(body?.fileData, 11_500_000); const vacancies = Number(body?.vacancies);
   const rawProfile = body?.profile && typeof body.profile === "object" ? body.profile as Record<string, unknown> : {};
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
       providerError = { name: parsed.name, message: parsed.message, statusCode: parsed.statusCode };
     } catch { /* resposta não JSON */ }
     console.error("Recruitment proposal email failed", { status: response.status, providerError, from });
+    if (response.status === 401 || response.status === 403) return NextResponse.json({ error: "A chave RESEND_API_KEY foi rejeitada pelo Resend. Gere uma nova chave, substitua-a em Production e faça um novo deployment.", code: "EMAIL_PROVIDER_AUTH_INVALID" }, { status: 503 });
     return NextResponse.json({ error: "Não foi possível enviar o pedido. Tente novamente.", provider: providerError }, { status: 502 });
   }
   return NextResponse.json({ ok: true }, { status: 201 });

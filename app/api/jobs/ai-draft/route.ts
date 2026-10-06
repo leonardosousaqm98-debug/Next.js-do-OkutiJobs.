@@ -90,17 +90,39 @@ export async function POST(request: NextRequest) {
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "A chave de IA ainda não está configurada no ambiente de produção." }, { status: 503 });
   const messages = [{ role: "system" as const, content: "És um especialista em recrutamento em Angola. Extrai requisitos explícitos de briefings e documentos de vaga, sem inventar dados. Organiza tudo em português nos campos pedidos. Quando faltar informação, devolve string vazia ou array vazio. Responde apenas JSON." }, { role: "user" as const, content: `Preenche o anúncio estruturado a partir desta informação:\n\n${source}` }];
-  const requestLlm = (structured: boolean) => fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ model: "gpt-5-mini", messages, max_completion_tokens: 4000, ...(structured ? { response_format: { type: "json_schema", json_schema: { name: "job_ad_draft", strict: true, schema } } } : { response_format: { type: "json_object" } }) }) });
-  let response = await requestLlm(true);
-  if (!response.ok) {
+  const configuredModel = process.env.FORGE_JOB_MODEL?.trim();
+  const models = [...new Set([configuredModel, "gpt-5-mini", "gemini-3-flash-preview"].filter(Boolean))] as string[];
+  const requestLlm = (model: string, structured: boolean) => {
+    const isGemini = model.startsWith("gemini-");
+    return fetch(`${baseUrl}/v1/chat/completions`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        messages,
+        ...(isGemini ? { max_tokens: 6000 } : { max_completion_tokens: 4000 }),
+        ...(structured ? { response_format: { type: "json_schema", json_schema: { name: "job_ad_draft", strict: true, schema } } } : { response_format: { type: "json_object" } }),
+      }),
+    });
+  };
+  let response: Response | null = null;
+  let providerStatus = 0;
+  for (const model of models) {
+    response = await requestLlm(model, true);
+    providerStatus = response.status;
+    if (response.ok) break;
     const firstError = await response.text().catch(() => "");
-    console.warn("[job-ai-draft] structured request failed", response.status, firstError.slice(0, 300));
-    response = await requestLlm(false);
+    console.warn("[job-ai-draft] structured request failed", { model, status: response.status, provider: firstError.slice(0, 300) });
+    if (response.status === 401 || response.status === 403) return NextResponse.json({ error: "A credencial do serviço de IA em produção é inválida ou expirou. Actualize BUILT_IN_FORGE_API_KEY e faça um novo deployment.", code: "AI_PROVIDER_AUTH_INVALID" }, { status: 503 });
+    response = await requestLlm(model, false);
+    providerStatus = response.status;
+    if (response.ok) break;
+    if (response.status === 401 || response.status === 403) return NextResponse.json({ error: "A credencial do serviço de IA em produção é inválida ou expirou. Actualize BUILT_IN_FORGE_API_KEY e faça um novo deployment.", code: "AI_PROVIDER_AUTH_INVALID" }, { status: 503 });
   }
-  if (!response.ok) {
-    const providerError = await response.text().catch(() => "");
-    console.error("[job-ai-draft] provider error", response.status, providerError.slice(0, 500));
-    return NextResponse.json({ error: `A IA não conseguiu preparar o anúncio (${response.status}). Tente novamente em alguns segundos.` }, { status: 502 });
+  if (!response?.ok) {
+    const providerError = await response?.text().catch(() => "") ?? "";
+    console.error("[job-ai-draft] provider error", { status: providerStatus, detail: providerError.slice(0, 500) });
+    return NextResponse.json({ error: `A IA não conseguiu preparar o anúncio (${providerStatus || 502}). Tente novamente em alguns segundos.` }, { status: 502 });
   }
   const result = await response.json() as LlmResult;
   const draft = parseDraft(result.choices?.[0]?.message?.content);
