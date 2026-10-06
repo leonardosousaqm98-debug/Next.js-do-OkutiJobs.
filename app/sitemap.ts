@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const publicPaths = [
   "/",
   "/vagas",
