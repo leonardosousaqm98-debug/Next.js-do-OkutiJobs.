@@ -12,7 +12,18 @@ async function getPublicJob(slug: string) {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return null;
   const { data } = await supabase.from("jobs").select("id,company_id,slug,title,description,requirements,country,province,city,work_mode,contract_type,published_at,updated_at").eq("slug", slug).eq("status", "published").maybeSingle();
-  if (!data) return null;
+  if (!data) {
+    try {
+      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://okutijobs.com").replace(/\/$/, "");
+      const response = await fetch(`${baseUrl}/api/jobs`, { cache: "no-store" });
+      const payload = response.ok ? await response.json() as { jobs?: SupabaseJob[] } : null;
+      const fallback = payload?.jobs?.find((job) => job.slug === slug);
+      if (fallback) return { row: fallback, company: null };
+    } catch {
+      // Continue to the standard not-found response when the public index is unavailable.
+    }
+    return null;
+  }
   const { data: company } = await supabase.from("public_company_profiles").select("id,name").eq("id", data.company_id).maybeSingle();
   return { row: data as SupabaseJob, company: company as PublicCompany | null };
 }
