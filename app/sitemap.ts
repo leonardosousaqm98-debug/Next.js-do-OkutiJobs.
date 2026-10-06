@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data } = await supabase
     .from("jobs")
     .select("slug,updated_at,published_at")
-    .eq("status", "published");
+    .not("published_at", "is", null);
 
   for (const job of data ?? []) {
     if (!job.slug) continue;
