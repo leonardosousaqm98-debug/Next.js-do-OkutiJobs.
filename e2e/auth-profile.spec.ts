@@ -42,7 +42,7 @@ test.describe("autenticação e perfil internacional", () => {
     const fullName = page.getByLabel(/Nome completo/i).first();
     await expect(fullName).toBeVisible({ timeout: 30_000 });
     await fullName.fill("Candidato QA OkutiJobs");
-    await page.locator("label").filter({ hasText: "País de residência" }).locator("select").selectOption("AO");
+    await page.locator("label").filter({ hasText: "País de residência" }).locator("select").selectOption({ label: "🇦🇴 Angola" });
     await page.locator("label").filter({ hasText: "Província / estado" }).locator("select").selectOption({ label: "Luanda" });
     await page.locator("label").filter({ hasText: "Cidade" }).locator("select").selectOption({ label: "Luanda" });
     await page.getByLabel(/Resumo profissional/i).fill("Profissional de QA a validar o fluxo internacional de perfil, competências e oportunidades.");
