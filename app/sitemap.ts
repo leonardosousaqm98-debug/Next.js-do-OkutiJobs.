@@ -14,7 +14,7 @@ const publicPaths = [
 ];
 
 function getBaseUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_APP_URL || "https://okutijobs.com").replace(/\/$/, "");
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -43,6 +43,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
+  const { data: courses } = await supabase.from("training_courses").select("slug,updated_at").eq("active", true);
+  for (const course of courses ?? []) {
+    if (!course.slug) continue;
+    entries.push({ url: `${baseUrl}/formacoes/${encodeURIComponent(course.slug)}`, lastModified: course.updated_at || undefined, changeFrequency: "weekly", priority: 0.75 });
+  }
+
   return entries;
 }
-

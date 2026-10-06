@@ -18,6 +18,15 @@ export async function POST(request: Request) {
   const attachments = fileData && fileName ? [{ filename: fileName, content: fileData.split(",")[1] || fileData }] : undefined;
   const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#123b4a"><h2>Novo pedido de proposta — Recrutamento especializado</h2><p><strong>Empresa:</strong> ${escapeHtml(company)}</p><p><strong>Email:</strong> ${escapeHtml(contact)}</p><p><strong>Telefone:</strong> ${escapeHtml(phone || "Não indicado")}</p><p><strong>Vagas em aberto:</strong> ${vacancies}</p><p><strong>Localização:</strong> ${escapeHtml(location || "Não indicada")}</p><hr><h3>Perfil estruturado</h3>${profileRows || "<p>O cliente enviou apenas a descrição abaixo.</p>"}<h3>Briefing original</h3><p>${escapeHtml(description || "Ver anexo JD.").replace(/\n/g, "<br>")}</p>${fileName ? `<p><strong>Anexo:</strong> ${escapeHtml(fileName)}</p>` : ""}</div>`;
   const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [commercialEmail], reply_to: contact, subject: `Pedido de recrutamento: ${company} — ${vacancies} vaga(s)`, html, ...(attachments ? { attachments } : {}) }) });
-  if (!response.ok) { console.error("Recruitment proposal email failed", response.status); return NextResponse.json({ error: "Não foi possível enviar o pedido. Tente novamente." }, { status: 502 }); }
+  if (!response.ok) {
+    const providerBody = await response.text().catch(() => "");
+    let providerError: unknown = providerBody.slice(0, 1200);
+    try {
+      const parsed = JSON.parse(providerBody) as Record<string, unknown>;
+      providerError = { name: parsed.name, message: parsed.message, statusCode: parsed.statusCode };
+    } catch { /* resposta não JSON */ }
+    console.error("Recruitment proposal email failed", { status: response.status, providerError, from });
+    return NextResponse.json({ error: "Não foi possível enviar o pedido. Tente novamente.", provider: providerError }, { status: 502 });
+  }
   return NextResponse.json({ ok: true }, { status: 201 });
 }
