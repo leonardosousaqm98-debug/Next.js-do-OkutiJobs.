@@ -90,37 +90,43 @@ export async function POST(request: NextRequest) {
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
   if (geminiKey) {
     const preferredModel = process.env.GEMINI_JOB_MODEL?.trim();
-    let model = preferredModel || "gemini-2.0-flash";
+    let available: string[] = [];
     if (!preferredModel) {
       const modelsResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(geminiKey)}`);
       if (modelsResponse.ok) {
         const catalog = await modelsResponse.json() as { models?: Array<{ name?: string; supportedGenerationMethods?: string[] }> };
-        const available = (catalog.models ?? [])
+        available = (catalog.models ?? [])
           .filter((item) => item.name && item.supportedGenerationMethods?.includes("generateContent"))
           .map((item) => item.name!.replace(/^models\//, ""));
-        model = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", ...available].find((candidate) => available.includes(candidate)) || available[0] || model;
       }
     }
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: messages[0].content }] },
-        contents: [{ role: "user", parts: [{ text: messages[1].content }] }],
-        generationConfig: { responseMimeType: "application/json", responseJsonSchema: schema, maxOutputTokens: 6000 },
-      }),
-    });
-    if (response.ok) {
-      const payload = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
-      const content = payload.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("");
-      const draft = parseDraft(content);
-      if (draft) return NextResponse.json({ ok: true, source: fileName ? "document" : "brief", fileName, draft, provider: "gemini" });
-      return NextResponse.json({ error: "A Gemini respondeu sem campos reconhecíveis. Tente usar um briefing mais directo." }, { status: 502 });
+    const models = [...new Set([preferredModel, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", ...available].filter(Boolean))] as string[];
+    let lastStatus = 404;
+    for (const apiVersion of ["v1beta", "v1"]) for (const model of models) {
+      const response = await fetch(`https://generativelanguage.googleapis.com/${apiVersion}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: messages[0].content }] },
+          contents: [{ role: "user", parts: [{ text: messages[1].content }] }],
+          generationConfig: { responseMimeType: "application/json", responseJsonSchema: schema, maxOutputTokens: 6000 },
+        }),
+      });
+      lastStatus = response.status;
+      if (response.ok) {
+        const payload = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+        const content = payload.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("");
+        const draft = parseDraft(content);
+        if (draft) return NextResponse.json({ ok: true, source: fileName ? "document" : "brief", fileName, draft, provider: "gemini" });
+        return NextResponse.json({ error: "A Gemini respondeu sem campos reconhecíveis. Tente usar um briefing mais directo." }, { status: 502 });
+      }
+      if (response.status === 401 || response.status === 403) {
+        const providerError = await response.text().catch(() => "");
+        console.error("[job-ai-draft] Gemini auth error", { status: response.status, detail: providerError.slice(0, 300) });
+        return NextResponse.json({ error: "A GEMINI_API_KEY configurada na Vercel foi rejeitada. Gere uma nova chave no Google AI Studio e actualize apenas essa variável.", code: "GEMINI_AUTH_INVALID" }, { status: 503 });
+      }
     }
-    const providerError = await response.text().catch(() => "");
-    console.error("[job-ai-draft] Gemini provider error", { status: response.status, detail: providerError.slice(0, 500) });
-    if (response.status === 401 || response.status === 403) return NextResponse.json({ error: "A GEMINI_API_KEY configurada na Vercel foi rejeitada. Gere uma nova chave no Google AI Studio e actualize apenas essa variável.", code: "GEMINI_AUTH_INVALID" }, { status: 503 });
-    return NextResponse.json({ error: `O serviço Gemini não conseguiu preparar o anúncio (${response.status}). Tente novamente.` }, { status: 502 });
+    return NextResponse.json({ error: `O serviço Gemini não encontrou um modelo disponível para esta chave (${lastStatus}).`, code: "GEMINI_MODEL_UNAVAILABLE" }, { status: 502 });
   }
   const baseUrl = process.env.BUILT_IN_FORGE_API_URL?.replace(/\/$/, "") || "https://forge.manus.ai";
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY;
