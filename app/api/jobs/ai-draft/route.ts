@@ -89,8 +89,19 @@ export async function POST(request: NextRequest) {
   const messages = [{ role: "system" as const, content: "És um especialista em recrutamento em Angola. Extrai requisitos explícitos de briefings e documentos de vaga, sem inventar dados. Organiza tudo em português nos campos pedidos. Quando faltar informação, devolve string vazia ou array vazio. Responde apenas JSON." }, { role: "user" as const, content: `Preenche o anúncio estruturado a partir desta informação:\n\n${source}` }];
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
   if (geminiKey) {
-    const model = process.env.GEMINI_JOB_MODEL?.trim() || "gemini-2.5-flash";
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+    const preferredModel = process.env.GEMINI_JOB_MODEL?.trim();
+    let model = preferredModel || "gemini-2.0-flash";
+    if (!preferredModel) {
+      const modelsResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(geminiKey)}`);
+      if (modelsResponse.ok) {
+        const catalog = await modelsResponse.json() as { models?: Array<{ name?: string; supportedGenerationMethods?: string[] }> };
+        const available = (catalog.models ?? [])
+          .filter((item) => item.name && item.supportedGenerationMethods?.includes("generateContent"))
+          .map((item) => item.name!.replace(/^models\//, ""));
+        model = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", ...available].find((candidate) => available.includes(candidate)) || available[0] || model;
+      }
+    }
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
