@@ -86,10 +86,34 @@ export async function POST(request: NextRequest) {
   }
   const source = [brief, documentText ? `DOCUMENTO DE REQUISITOS (${fileName}):\n${documentText}` : ""].filter(Boolean).join("\n\n");
   if (source.length < 20) return NextResponse.json({ error: "Escreva um briefing ou carregue um documento com os requisitos da vaga." }, { status: 400 });
+  const messages = [{ role: "system" as const, content: "És um especialista em recrutamento em Angola. Extrai requisitos explícitos de briefings e documentos de vaga, sem inventar dados. Organiza tudo em português nos campos pedidos. Quando faltar informação, devolve string vazia ou array vazio. Responde apenas JSON." }, { role: "user" as const, content: `Preenche o anúncio estruturado a partir desta informação:\n\n${source}` }];
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  if (geminiKey) {
+    const model = process.env.GEMINI_JOB_MODEL?.trim() || "gemini-2.5-flash";
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: messages[0].content }] },
+        contents: [{ role: "user", parts: [{ text: messages[1].content }] }],
+        generationConfig: { responseMimeType: "application/json", responseJsonSchema: schema, maxOutputTokens: 6000 },
+      }),
+    });
+    if (response.ok) {
+      const payload = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+      const content = payload.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("");
+      const draft = parseDraft(content);
+      if (draft) return NextResponse.json({ ok: true, source: fileName ? "document" : "brief", fileName, draft, provider: "gemini" });
+      return NextResponse.json({ error: "A Gemini respondeu sem campos reconhecíveis. Tente usar um briefing mais directo." }, { status: 502 });
+    }
+    const providerError = await response.text().catch(() => "");
+    console.error("[job-ai-draft] Gemini provider error", { status: response.status, detail: providerError.slice(0, 500) });
+    if (response.status === 401 || response.status === 403) return NextResponse.json({ error: "A GEMINI_API_KEY configurada na Vercel foi rejeitada. Gere uma nova chave no Google AI Studio e actualize apenas essa variável.", code: "GEMINI_AUTH_INVALID" }, { status: 503 });
+    return NextResponse.json({ error: `O serviço Gemini não conseguiu preparar o anúncio (${response.status}). Tente novamente.` }, { status: 502 });
+  }
   const baseUrl = process.env.BUILT_IN_FORGE_API_URL?.replace(/\/$/, "") || "https://forge.manus.ai";
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "A chave de IA ainda não está configurada no ambiente de produção." }, { status: 503 });
-  const messages = [{ role: "system" as const, content: "És um especialista em recrutamento em Angola. Extrai requisitos explícitos de briefings e documentos de vaga, sem inventar dados. Organiza tudo em português nos campos pedidos. Quando faltar informação, devolve string vazia ou array vazio. Responde apenas JSON." }, { role: "user" as const, content: `Preenche o anúncio estruturado a partir desta informação:\n\n${source}` }];
+  if (!apiKey) return NextResponse.json({ error: "A variável GEMINI_API_KEY não está disponível neste deployment. Confirme que está em Production e faça Redeploy." }, { status: 503 });
   const configuredModel = process.env.FORGE_JOB_MODEL?.trim();
   const models = [...new Set([configuredModel, "gpt-5-mini", "gemini-3-flash-preview"].filter(Boolean))] as string[];
   const requestLlm = (model: string, structured: boolean) => {
