@@ -22,6 +22,7 @@ export function LanguageSwitcher() {
     window.localStorage.setItem("okutijobs-language", value);
     document.cookie = `okutijobs-language=${encodeURIComponent(value)};path=/;max-age=31536000;samesite=lax`;
     document.documentElement.lang = value;
+    window.dispatchEvent(new CustomEvent("okutijobs-language-change", { detail: value }));
   }
   return <label className="language-switcher"><span className="sr-only">Idioma da plataforma</span><select aria-label="Idioma da plataforma" value={language} onChange={(event) => change(event.target.value)}>{languages.map(([code, label]) => <option value={code} key={code}>{label}</option>)}</select></label>;
 }

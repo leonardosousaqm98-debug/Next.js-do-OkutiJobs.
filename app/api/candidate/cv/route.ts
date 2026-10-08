@@ -18,9 +18,24 @@ export async function POST(request: Request) {
   const path = `${authData.user.id}/${documentType}/${crypto.randomUUID()}-${safeName}`;
   const { error: uploadError } = await supabase.storage.from("candidate-documents").upload(path, file, { contentType: file.type, upsert: false });
   if (uploadError) return NextResponse.json({ error: "Não foi possível guardar o documento." }, { status: 400 });
-  const { error: metadataError } = await supabase.from("candidate_documents").insert({ candidate_id: authData.user.id, storage_path: path, original_name: file.name.slice(0, 255), mime_type: file.type, size_bytes: file.size, document_type: documentType });
+  const { data: metadata, error: metadataError } = await supabase.from("candidate_documents").insert({ candidate_id: authData.user.id, storage_path: path, original_name: file.name.slice(0, 255), mime_type: file.type, size_bytes: file.size, document_type: documentType }).select("id").single();
   if (metadataError) return NextResponse.json({ error: "O ficheiro foi carregado, mas não foi possível guardar os metadados." }, { status: 500 });
-  return NextResponse.json({ ok: true, path, fileName: file.name, documentType });
+  return NextResponse.json({ ok: true, id: metadata.id, path, fileName: file.name, documentType });
+}
+
+export async function DELETE(request: Request) {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return NextResponse.json({ error: "Supabase não está configurado." }, { status: 503 });
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user) return NextResponse.json({ error: "É necessário iniciar sessão." }, { status: 401 });
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "Documento inválido." }, { status: 400 });
+  const { data: document, error: readError } = await supabase.from("candidate_documents").select("id, storage_path").eq("id", id).eq("candidate_id", authData.user.id).single();
+  if (readError || !document) return NextResponse.json({ error: "Documento não encontrado." }, { status: 404 });
+  await supabase.storage.from("candidate-documents").remove([document.storage_path]);
+  const { error } = await supabase.from("candidate_documents").delete().eq("id", id).eq("candidate_id", authData.user.id);
+  if (error) return NextResponse.json({ error: "Não foi possível remover o comprovativo." }, { status: 400 });
+  return NextResponse.json({ ok: true });
 }
 
 export async function GET() {
