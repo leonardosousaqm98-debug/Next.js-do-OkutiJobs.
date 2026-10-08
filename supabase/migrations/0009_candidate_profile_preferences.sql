@@ -11,3 +11,5 @@ set visibility = 'public'
 where visibility is distinct from 'public';
 
 -- Keep existing document rows; cv and cv_english are the two supported CV slots.
+alter table public.candidate_profiles
+  add column if not exists nationality_secondary text;
