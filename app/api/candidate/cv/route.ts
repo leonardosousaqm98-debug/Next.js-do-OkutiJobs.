@@ -9,7 +9,8 @@ export async function POST(request: Request) {
   if (!supabase) return NextResponse.json({ error: "Supabase não está configurado." }, { status: 503 });
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) return NextResponse.json({ error: "É necessário iniciar sessão." }, { status: 401 });
-  const formData = await request.formData(); const file = formData.get("file"); const documentType = formData.get("documentType") === "certificate" ? "certificate" : "cv";
+  const formData = await request.formData(); const file = formData.get("file"); const requestedType = formData.get("documentType"); const documentType = requestedType === "certificate" ? "certificate" : requestedType === "cv_english" ? "cv_english" : "cv";
+  if (documentType === "cv" || documentType === "cv_english") { const { count } = await supabase.from("candidate_documents").select("id", { count: "exact", head: true }).eq("candidate_id", authData.user.id).in("document_type", ["cv", "cv_english"]); if ((count ?? 0) >= 2) return NextResponse.json({ error: "Cada candidato pode manter no máximo dois CVs." }, { status: 400 }); }
   if (!(file instanceof File)) return NextResponse.json({ error: "Seleccione um ficheiro PDF, DOC ou DOCX." }, { status: 400 });
   const extension = allowed.get(file.type); if (!extension || file.size > MAX_BYTES) return NextResponse.json({ error: "O ficheiro deve ser PDF, DOC ou DOCX e não pode exceder 10 MB." }, { status: 400 });
   if (file.type === "application/pdf") { const signature = new TextDecoder().decode(new Uint8Array(await file.arrayBuffer()).slice(0, 5)); if (signature !== "%PDF-") return NextResponse.json({ error: "O ficheiro PDF não parece válido." }, { status: 400 }); }

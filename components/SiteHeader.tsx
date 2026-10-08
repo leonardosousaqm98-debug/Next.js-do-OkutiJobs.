@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeSwitcher } from "@/components/ThemeProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 type SiteHeaderProps = { signedIn?: boolean; accountHref?: string };
 
@@ -14,6 +15,6 @@ export function SiteHeader({ signedIn = false, accountHref = "/dashboard" }: Sit
       <Link className="nav-action nav-action-services" href="/formacoes"><NavIcon>◈</NavIcon><span>Formações</span></Link>
     </nav>
     <details className="mobile-nav-dropdown"><summary aria-label="Abrir menu">Menu</summary><div className="nav-dropdown-menu" role="menu"><Link href="/vagas" role="menuitem">Encontrar vagas</Link><Link href="/pagina-candidatos#consultoria-candidatos" role="menuitem">Consultoria para candidatos</Link><Link href="/formacoes" role="menuitem">Formações</Link></div></details>
-    <div className="header-actions"><ThemeSwitcher /><Link className="header-login" href={signedIn ? accountHref : "/login"}><span className="login-dot" aria-hidden="true" />{signedIn ? "Área pessoal" : "Iniciar sessão"}</Link><Link className="button button-dark header-cta" href={signedIn ? "/profile" : "/login"}>{signedIn ? "Abrir perfil" : "Criar conta"} <span>↗</span></Link></div>
+    <div className="header-actions"><LanguageSwitcher /><ThemeSwitcher /><Link className="header-login" href={signedIn ? accountHref : "/login"}><span className="login-dot" aria-hidden="true" />{signedIn ? "Área pessoal" : "Iniciar sessão"}</Link><Link className="button button-dark header-cta" href={signedIn ? "/profile" : "/login"}>{signedIn ? "Abrir perfil" : "Criar conta"} <span>↗</span></Link></div>
   </header>;
 }
