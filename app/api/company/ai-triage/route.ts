@@ -40,12 +40,15 @@ export async function POST(request: Request) {
   const { data: applications } = await admin.from("applications").select("candidate_id").eq("job_id", jobId).limit(40);
   const candidateIds = Array.from(new Set((applications ?? []).map((row) => row.candidate_id).filter(Boolean)));
   if (!candidateIds.length) return NextResponse.json({ jobId, results: [], message: "Ainda não existem candidaturas para esta vaga." });
-  const [{ data: candidates }, { data: profiles }] = await Promise.all([
+  const [{ data: candidates }, { data: profiles }, { data: assessments }] = await Promise.all([
     admin.from("candidate_profiles").select("id,headline,desired_job_title,current_title,seniority_level,province,municipality,academic_level,study_field,skills,functional_areas,languages,certifications,experiences_structured,education_structured,certifications_structured,hard_skills,language_items,soft_skills,availability,preferred_work_mode").in("id", candidateIds),
     admin.from("profiles").select("id,full_name").in("id", candidateIds),
+    admin.from("candidate_assessments").select("candidate_id,assessment_type,language_code,score,level,completed_at").in("candidate_id", candidateIds).order("completed_at", { ascending: false }),
   ]);
   const profileNames = new Map((profiles ?? []).map((profile) => [profile.id, profile.full_name || "Candidato"]));
-  const candidatePayload = (candidates ?? []).map((candidate) => ({ candidateId: candidate.id, name: profileNames.get(candidate.id) || "Candidato", profile: candidate }));
+  const candidateAssessments = new Map<string, Array<Record<string, unknown>>>();
+  for (const assessment of assessments ?? []) candidateAssessments.set(assessment.candidate_id, [...(candidateAssessments.get(assessment.candidate_id) ?? []), assessment]);
+  const candidatePayload = (candidates ?? []).map((candidate) => ({ candidateId: candidate.id, name: profileNames.get(candidate.id) || "Candidato", profile: candidate, assessments: candidateAssessments.get(candidate.id) ?? [] }));
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY;
   const baseUrl = process.env.BUILT_IN_FORGE_API_URL?.replace(/\/$/, "") || "https://forge.manus.im";
   if (!apiKey) return NextResponse.json({ error: "A IA de triagem ainda não está configurada." }, { status: 503 });
