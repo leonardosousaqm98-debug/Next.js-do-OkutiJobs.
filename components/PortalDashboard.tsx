@@ -14,6 +14,7 @@ const candidateLinks = [
   { label: "O meu perfil", href: "/profile", note: "Complete os seus dados" },
   { label: "As minhas candidaturas", href: "/candidato/candidaturas", note: "Acompanhe o seu percurso" },
   { label: "Avaliações e testes", href: "/candidato/avaliacoes", note: "Idioma, conhecimento e perfil" },
+  { label: "Competências verificadas", href: "/candidato/competencias", note: "Obter selos de confiança" },
   { label: "Revisão de CV por IA", href: "/profile", note: "Disponível ao carregar um CV" },
 ];
 
