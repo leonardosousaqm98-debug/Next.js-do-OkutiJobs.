@@ -7,6 +7,13 @@ export async function POST(request: Request) {
   if (!supabase) return NextResponse.json({ error: "Serviço de avaliações indisponível." }, { status: 503 });
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return NextResponse.json({ error: "Inicie sessão como candidato." }, { status: 401 });
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("account_type").eq("id", auth.user.id).maybeSingle();
+  if (profileError || profile?.account_type !== "candidate") return NextResponse.json({ error: "Esta área de avaliações está disponível apenas para contas de candidato." }, { status: 403 });
+  const { data: candidateProfile } = await supabase.from("candidate_profiles").select("id").eq("id", auth.user.id).maybeSingle();
+  if (!candidateProfile) {
+    const { error: candidateError } = await supabase.from("candidate_profiles").insert({ id: auth.user.id, visibility: "public", open_to_work: true });
+    if (candidateError && candidateError.code !== "23505") return NextResponse.json({ error: "Complete primeiro o perfil de candidato." }, { status: 400 });
+  }
   const body = await request.json().catch(() => null) as { assessmentType?: unknown; languageCode?: unknown; score?: unknown; level?: unknown; answers?: unknown } | null;
   const assessmentType = String(body?.assessmentType ?? "");
   const languageCode = body?.languageCode ? String(body.languageCode).slice(0, 12) : null;
