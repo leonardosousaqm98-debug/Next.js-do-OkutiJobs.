@@ -41,6 +41,19 @@ async function extractPdfText(url: string) {
   return text.slice(0, MAX_TEXT);
 }
 
+async function extractDocxText(url: string) {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error(`Não foi possível descarregar o CV (${response.status}).`);
+  const buffer = Buffer.from(await response.arrayBuffer());
+  // DOCX é um ZIP XML; mammoth extrai apenas o texto, sem enviar o documento
+  // privado para o provider como file_url.
+  const mammoth = await import("mammoth");
+  const result = await mammoth.extractRawText({ buffer });
+  const text = result.value.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").trim();
+  if (text.length < 40) throw new Error("O documento não contém texto suficiente para análise automática.");
+  return text.slice(0, MAX_TEXT);
+}
+
 export async function POST() {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return NextResponse.json({ error: "Supabase não está configurado." }, { status: 503 });
@@ -64,13 +77,18 @@ export async function POST() {
     // O caminho principal envia texto já extraído. Isto evita falhas do provider ao
     // tentar interpretar file_url e permite auditar exactamente o conteúdo enviado.
     let sourceText = "";
-    if (document.mime_type === "application/pdf" || document.original_name.toLowerCase().endsWith(".pdf")) {
+    const fileName = document.original_name.toLowerCase();
+    if (document.mime_type === "application/pdf" || fileName.endsWith(".pdf")) {
       sourceText = await extractPdfText(signed.signedUrl);
+    } else if (document.mime_type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || fileName.endsWith(".docx")) {
+      sourceText = await extractDocxText(signed.signedUrl);
+    } else if (fileName.endsWith(".doc") || document.mime_type === "application/msword") {
+      throw new Error("O formato DOC antigo não é suportado neste momento. Guarde o ficheiro como DOCX ou PDF e carregue-o novamente.");
     }
 
     const userContent = sourceText
       ? `Importa automaticamente os dados deste CV para o perfil internacional OkutiJobs. Mantém o idioma original dos nomes próprios, empresas e cursos.\n\nTEXTO BRUTO EXTRAÍDO DO PDF:\n${sourceText}`
-      : `Importa automaticamente os dados deste CV para o perfil internacional OkutiJobs. Mantém o idioma original dos nomes próprios, empresas e cursos. O documento original está disponível em ${signed.signedUrl}`;
+      : "Não foi possível extrair texto deste documento. Carregue o CV em PDF ou DOCX.";
 
     const extracted = await invokeLlm([
       {
