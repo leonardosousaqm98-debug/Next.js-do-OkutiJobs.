@@ -60,7 +60,11 @@ export async function POST(request: Request) {
   let parsed: unknown;
   try { parsed = JSON.parse(content); } catch { return NextResponse.json({ error: "A resposta da IA não pôde ser validada." }, { status: 502 }); }
   const rows = Array.isArray(parsed) ? parsed : [];
-  const results: Array<Record<string, unknown>> = rows.map((item) => ({ ...(item as Record<string, unknown>), name: profileNames.get(String((item as Record<string, unknown>).candidateId)) || "Candidato" }));
+  const results: Array<Record<string, unknown>> = rows.map((item) => {
+    const candidateId = String((item as Record<string, unknown>).candidateId);
+    const candidateResults = (candidateAssessments.get(candidateId) ?? []).map((assessment) => ({ type: assessment.assessment_type, language: assessment.language_code, score: assessment.score, level: assessment.level }));
+    return { ...(item as Record<string, unknown>), name: profileNames.get(candidateId) || "Candidato", assessments: candidateResults };
+  });
   results.sort((a, b) => Number(b.score ?? 0) - Number(a.score ?? 0));
   return NextResponse.json({ jobId, results, reviewedBy: "IA assistida — decisão final da empresa" });
 }
