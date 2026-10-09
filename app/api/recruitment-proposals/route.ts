@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const commercialEmail = "comercial@okutijobs.com";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,6 +30,16 @@ export async function POST(request: Request) {
     console.error("Recruitment proposal email failed", { status: response.status, providerError, from });
     if (response.status === 401 || response.status === 403) return NextResponse.json({ error: "A chave RESEND_API_KEY foi rejeitada pelo Resend. Gere uma nova chave, substitua-a em Production e faça um novo deployment.", code: "EMAIL_PROVIDER_AUTH_INVALID" }, { status: 503 });
     return NextResponse.json({ error: "Não foi possível enviar o pedido. Tente novamente.", provider: providerError }, { status: 502 });
+  }
+  const crm = createSupabaseAdminClient();
+  if (crm) {
+    const { data: crmCompany } = await crm.from("crm_companies").insert({ name: company, source: "proposal_request", status: "lead", country: "Angola" }).select("id").maybeSingle();
+    if (crmCompany) {
+      const { data: crmContact } = await crm.from("crm_contacts").insert({ crm_company_id: crmCompany.id, full_name: company, email: contact, phone, is_primary: true }).select("id").maybeSingle();
+      const { data: stage } = await crm.from("crm_pipeline_stages").select("id").eq("position", 1).maybeSingle();
+      if (stage) await crm.from("crm_deals").insert({ crm_company_id: crmCompany.id, stage_id: stage.id, title: `Pedido de proposta — ${company}`, source: "proposal_request", description, estimated_value: 0 });
+      if (crmContact) await crm.from("crm_activities").insert({ crm_company_id: crmCompany.id, activity_type: "proposal", subject: "Novo pedido de proposta", body: description || "Pedido recebido através da plataforma." });
+    }
   }
   return NextResponse.json({ ok: true }, { status: 201 });
 }
