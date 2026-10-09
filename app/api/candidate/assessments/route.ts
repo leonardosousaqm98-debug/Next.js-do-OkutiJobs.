@@ -13,8 +13,13 @@ export async function POST(request: Request) {
   const score = Number(body?.score);
   if (!types.has(assessmentType) || !Number.isInteger(score) || score < 0 || score > 100 || (assessmentType === "language" && !languageCode)) return NextResponse.json({ error: "Resultado de avaliação inválido." }, { status: 400 });
   const answers = body?.answers && typeof body.answers === "object" ? body.answers : {};
-  const { error } = await supabase.from("candidate_assessments").upsert({ candidate_id: auth.user.id, assessment_type: assessmentType, language_code: languageCode, score, level: String(body?.level ?? "").slice(0, 40) || null, answers }, { onConflict: "candidate_id,assessment_type,language_code" });
-  if (error) { console.error("candidate assessment upsert failed", { code: error.code, message: error.message }); return NextResponse.json({ error: "Não foi possível guardar o resultado. Confirme se a migração de avaliações foi aplicada." }, { status: 503 }); }
+  const values = { candidate_id: auth.user.id, assessment_type: assessmentType, language_code: languageCode, score, level: String(body?.level ?? "").slice(0, 40) || null, answers };
+  let existingQuery = supabase.from("candidate_assessments").select("id").eq("candidate_id", auth.user.id).eq("assessment_type", assessmentType);
+  existingQuery = languageCode ? existingQuery.eq("language_code", languageCode) : existingQuery.is("language_code", null);
+  const { data: existing, error: lookupError } = await existingQuery.maybeSingle();
+  if (lookupError) { console.error("candidate assessment lookup failed", { code: lookupError.code, message: lookupError.message }); return NextResponse.json({ error: "Não foi possível aceder aos resultados. Confirme se a migração foi executada no projecto correcto." }, { status: 503 }); }
+  const { error } = existing ? await supabase.from("candidate_assessments").update(values).eq("id", existing.id) : await supabase.from("candidate_assessments").insert(values);
+  if (error) { console.error("candidate assessment save failed", { code: error.code, message: error.message }); return NextResponse.json({ error: "Não foi possível guardar o resultado. Confirme as políticas RLS da tabela de avaliações." }, { status: 503 }); }
   return NextResponse.json({ ok: true, score, level: body?.level ?? null }, { status: 201 });
 }
 
