@@ -9,6 +9,11 @@ export async function POST(request: Request) {
   if (!auth.user) return NextResponse.json({ error: "Inicie sessão para se candidatar." }, { status: 401 });
   const body = await request.json().catch(() => null) as { jobId?: string } | null;
   if (!isValidJobId(body?.jobId)) return NextResponse.json({ error: "Vaga inválida." }, { status: 400 });
+  const { data: candidate } = await supabase.from("candidate_profiles").select("id").eq("id", auth.user.id).maybeSingle();
+  if (!candidate) return NextResponse.json({ error: "Esta candidatura deve ser enviada a partir de uma conta de candidato." }, { status: 403 });
+  const { data: job } = await supabase.from("jobs").select("id,status,candidate_access_until,expires_at").eq("id", body.jobId).maybeSingle();
+  const deadline = job?.candidate_access_until || job?.expires_at;
+  if (!job || job.status !== "published" || (deadline && new Date(deadline) <= new Date())) return NextResponse.json({ error: "Esta vaga já não está a receber candidaturas." }, { status: 410 });
   const { error } = await supabase.from("applications").insert({ job_id: body.jobId, candidate_id: auth.user.id });
   if (error?.code === "23505") return NextResponse.json({ error: "Já se candidatou a esta vaga." }, { status: 409 });
   if (error) return NextResponse.json({ error: "Não foi possível registar a candidatura." }, { status: 500 });

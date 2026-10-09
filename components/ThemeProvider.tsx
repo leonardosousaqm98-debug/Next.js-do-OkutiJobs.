@@ -2,19 +2,20 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-type ThemeId = "neon" | "hud" | "minimal" | "steps";
+type ThemeId = "light" | "dark";
 type ThemeContextValue = { theme: ThemeId; setTheme: (theme: ThemeId) => void };
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const storageKey = "okutijobs-theme";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeId>("minimal");
+  const [theme, setThemeState] = useState<ThemeId>("light");
   useEffect(() => {
-    const saved = window.localStorage.getItem(storageKey) as ThemeId | null;
-    if (saved && ["neon", "hud", "minimal", "steps"].includes(saved)) setThemeState(saved);
+    const saved = window.localStorage.getItem(storageKey);
+    if (saved === "dark" || saved === "light") setThemeState(saved);
   }, []);
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.theme = "minimal";
+    document.documentElement.dataset.mode = theme;
     window.localStorage.setItem(storageKey, theme);
   }, [theme]);
   const value = useMemo(() => ({ theme, setTheme: setThemeState }), [theme]);
@@ -27,17 +28,8 @@ export function useTheme() {
   return context;
 }
 
-const themes: Array<{ id: ThemeId; label: string; short: string }> = [
-  { id: "neon", label: "Glassmorphism Neón", short: "Neón" },
-  { id: "hud", label: "HUD Cyber-Tech", short: "HUD" },
-  { id: "minimal", label: "Minimalista Flutuante", short: "Minimal" },
-  { id: "steps", label: "Step-by-Step Interativo", short: "Etapas" },
-];
-
-export function ThemeSwitcher() {
+export function DarkModeToggle() {
   const { theme, setTheme } = useTheme();
-  return <div className="theme-switcher" role="group" aria-label="Tema visual da plataforma">
-    <span className="theme-switcher-label">Tema</span>
-    {themes.map((item) => <button key={item.id} type="button" className={theme === item.id ? "active" : ""} onClick={() => setTheme(item.id)} aria-pressed={theme === item.id} title={item.label}>{item.short}</button>)}
-  </div>;
+  const dark = theme === "dark";
+  return <button className="dark-mode-toggle" type="button" onClick={() => setTheme(dark ? "light" : "dark")} aria-pressed={dark} aria-label={dark ? "Mudar para modo claro" : "Mudar para modo escuro"} title={dark ? "Modo claro" : "Modo escuro"}>{dark ? "☀" : "◐"}<span>{dark ? "Claro" : "Escuro"}</span></button>;
 }

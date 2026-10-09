@@ -5,13 +5,13 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-type SupabaseJob = { id: string; company_id: string; slug: string; title: string; description: string; requirements: string | null; country: string | null; province: string | null; city: string | null; work_mode: string | null; contract_type: string | null; published_at?: string | null; updated_at?: string | null };
+type SupabaseJob = { id: string; company_id: string; slug: string; title: string; description: string; requirements: string | null; country: string | null; province: string | null; city: string | null; work_mode: string | null; contract_type: string | null; expires_at?: string | null; candidate_access_until?: string | null; published_at?: string | null; updated_at?: string | null };
 type PublicCompany = { id: string; name: string };
 
 async function getPublicJob(slug: string) {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return null;
-  const { data } = await supabase.from("jobs").select("id,company_id,slug,title,description,requirements,country,province,city,work_mode,contract_type,published_at,updated_at").eq("slug", slug).eq("status", "published").maybeSingle();
+  const { data } = await supabase.from("jobs").select("id,company_id,slug,title,description,requirements,country,province,city,work_mode,contract_type,expires_at,candidate_access_until,published_at,updated_at").eq("slug", slug).eq("status", "published").maybeSingle();
   if (!data) {
     try {
       const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://okutijobs.com").replace(/\/$/, "");
@@ -56,7 +56,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
     title: row.title,
     description: row.description,
     datePosted: (row.published_at || row.updated_at || new Date().toISOString()).slice(0, 10),
-    validThrough: new Date(Date.now() + 90 * 86400000).toISOString(),
+    validThrough: row.candidate_access_until || row.expires_at || new Date(Date.now() + 30 * 86400000).toISOString(),
     employmentType: row.contract_type || "FULL_TIME",
     hiringOrganization: { "@type": "Organization", name: company?.name || "Empresa verificada", sameAs: "https://okutijobs.com" },
     jobLocation: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: location || "Angola", addressCountry: row.country || "AO" } },

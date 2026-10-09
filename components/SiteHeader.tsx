@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ThemeSwitcher } from "@/components/ThemeProvider";
+import { DarkModeToggle } from "@/components/ThemeProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { SignOutButton } from "@/components/SignOutButton";
 
@@ -27,6 +27,6 @@ export function SiteHeader({ signedIn = false, accountHref = "/dashboard" }: Sit
     <Link href="/" className="brand" aria-label="OkutiJobs — início"><span className="brand-lockup"><span className="brand-symbol"><img src="/icon.png" alt="" width="34" height="34" /></span><span className="brand-word">Okuti<span>Jobs</span></span></span></Link>
     <nav className="desktop-nav" aria-label="Navegação principal"><Link className="nav-action nav-action-jobs" href="/vagas"><NavIcon>⌕</NavIcon><span>{t.jobs}</span></Link><Link className="nav-action nav-action-support" href="/pagina-candidatos#consultoria-candidatos"><NavIcon>✦</NavIcon><span>{t.consulting}</span></Link><Link className="nav-action nav-action-services" href="/formacoes"><NavIcon>◈</NavIcon><span>{t.training}</span></Link></nav>
     <details className="mobile-nav-dropdown"><summary aria-label="Abrir menu">Menu</summary><div className="nav-dropdown-menu" role="menu"><Link href="/vagas" role="menuitem">{t.jobs}</Link><Link href="/pagina-candidatos#consultoria-candidatos" role="menuitem">{t.consulting}</Link><Link href="/formacoes" role="menuitem">{t.training}</Link></div></details>
-    <div className="header-actions"><LanguageSwitcher /><ThemeSwitcher />{signedIn ? <SignOutButton /> : <Link className="header-login" href="/login"><span className="login-dot" aria-hidden="true" />{t.login}</Link>}<Link className="button button-dark header-cta" href={signedIn ? "/profile" : "/login"}>{signedIn ? t.profile : t.signup} <span>↗</span></Link></div>
+    <div className="header-actions"><LanguageSwitcher /><DarkModeToggle />{signedIn ? <SignOutButton /> : <Link className="header-login" href="/login"><span className="login-dot" aria-hidden="true" />{t.login}</Link>}<Link className="button button-dark header-cta" href={signedIn ? "/profile" : "/login"}>{signedIn ? t.profile : t.signup} <span>↗</span></Link></div>
   </header>;
 }
