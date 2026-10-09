@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const allowed = new Map([["application/pdf", "pdf"], ["application/msword", "doc"], ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"]]);
@@ -18,8 +19,13 @@ export async function POST(request: Request) {
   const path = `${authData.user.id}/${documentType}/${crypto.randomUUID()}-${safeName}`;
   const { error: uploadError } = await supabase.storage.from("candidate-documents").upload(path, file, { contentType: file.type, upsert: false });
   if (uploadError) return NextResponse.json({ error: "Não foi possível guardar o documento." }, { status: 400 });
-  const { data: metadata, error: metadataError } = await supabase.from("candidate_documents").insert({ candidate_id: authData.user.id, storage_path: path, original_name: file.name.slice(0, 255), mime_type: file.type, size_bytes: file.size, document_type: documentType }).select("id").single();
-  if (metadataError) return NextResponse.json({ error: "O ficheiro foi carregado, mas não foi possível guardar os metadados." }, { status: 500 });
+  const metadataClient = createSupabaseAdminClient() ?? supabase;
+  const { data: metadata, error: metadataError } = await metadataClient.from("candidate_documents").insert({ candidate_id: authData.user.id, storage_path: path, original_name: file.name.slice(0, 255), mime_type: file.type, size_bytes: file.size, document_type: documentType }).select("id").single();
+  if (metadataError) {
+    console.error("candidate document metadata insert failed", { code: metadataError.code, message: metadataError.message, candidateId: authData.user.id, documentType });
+    await supabase.storage.from("candidate-documents").remove([path]);
+    return NextResponse.json({ error: "Não foi possível registar o currículo. Tente novamente; o ficheiro incompleto foi removido." }, { status: 500 });
+  }
   return NextResponse.json({ ok: true, id: metadata.id, path, fileName: file.name, documentType });
 }
 
