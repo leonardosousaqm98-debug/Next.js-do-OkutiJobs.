@@ -11,6 +11,8 @@ type CompanyService = { icon: string; title: string; description: string; href: 
 
 const candidateLinks = [
   { label: "Oportunidades compatíveis", href: "/vagas", note: "6 vagas disponíveis" },
+  { label: "OkutiAcademy", href: "/academy", note: "Micro-aulas, certificados e novos badges" },
+  { label: "Falar com Mister Okuti", href: "/mister-okuti", note: "Tire dúvidas e encontre oportunidades compatíveis" },
   { label: "O meu perfil", href: "/profile", note: "Complete os seus dados" },
   { label: "As minhas candidaturas", href: "/candidato/candidaturas", note: "Acompanhe o seu percurso" },
   { label: "Avaliações e testes", href: "/candidato/avaliacoes", note: "Idioma, conhecimento e perfil" },
@@ -20,6 +22,7 @@ const candidateLinks = [
 
 const companyLinks = [
   { label: "Criar nova oferta", href: "/empresa/vagas/nova", note: "Publique uma oportunidade" },
+  { label: "Falar com Mister Okuti", href: "/mister-okuti", note: "Redija ofertas e pesquise talentos por competências" },
   { label: "Ofertas de emprego", href: "/vagas", note: "Gerir vagas publicadas" },
   { label: "Candidaturas recebidas", href: "/empresa/candidaturas", note: "Consultar perfis e CVs" },
   { label: "Estatísticas e métricas", href: "/empresa/estatisticas", note: "Acompanhar o desempenho" },

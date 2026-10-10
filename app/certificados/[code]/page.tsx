@@ -1,0 +1,17 @@
+import Link from "next/link";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+type CertificateCheck = { certificate_number: string; learner_display_name: string; course_title: string; issued_at: string; status: string; integrity_hash: string; integrity_valid: boolean; anchor_network: string | null; anchor_tx_hash: string | null; anchored_at: string | null };
+
+export const metadata = { title: "Verificar certificado OkutiAcademy", description: "Validação pública de certificados OkutiAcademy." };
+
+export default async function VerifyCertificatePage({ params }: { params: Promise<{ code: string }> }) {
+  const { code } = await params;
+  const validCode = /^[0-9a-f]{32}$/i.test(code);
+  const supabase = await createSupabaseServerClient();
+  const { data } = validCode && supabase ? await supabase.rpc("verify_academy_certificate", { p_verification_code: code.toLowerCase() }) : { data: null };
+  const certificate = (Array.isArray(data) ? data[0] : data) as CertificateCheck | null;
+  const verified = Boolean(certificate && certificate.status === "issued" && certificate.integrity_valid);
+  const issued = certificate?.issued_at ? new Intl.DateTimeFormat("pt-PT", { dateStyle: "long" }).format(new Date(certificate.issued_at)) : "";
+  return <main className="academy-verify-page"><header className="academy-verify-header"><Link href="/" className="academy-verify-brand"><span>O</span> Okuti<span>Jobs</span></Link><Link href="/academy">OkutiAcademy <b>↗</b></Link></header><section className={`academy-verify-card ${verified ? "is-valid" : "is-invalid"}`}><span className="academy-verify-icon" aria-hidden="true">{verified ? "✓" : "!"}</span><p className="eyebrow">Verificação pública · OkutiAcademy</p><h1>{verified ? "Certificado válido" : certificate?.status === "revoked" ? "Certificado revogado" : "Certificado não encontrado"}</h1>{certificate ? <><p className="academy-verify-status">{verified ? "A referência existe e o hash corresponde aos dados registados." : certificate.status === "revoked" ? "Este certificado foi revogado pelo emissor." : "Os dados do certificado não passaram a verificação de integridade."}</p><dl className="academy-verify-details"><div><dt>Certificado</dt><dd>{certificate.certificate_number}</dd></div><div><dt>Nome apresentado</dt><dd>{certificate.learner_display_name}</dd></div><div><dt>Formação</dt><dd>{certificate.course_title}</dd></div><div><dt>Emitido em</dt><dd>{issued}</dd></div><div className="academy-verify-hash"><dt>Hash SHA-256</dt><dd><code>{certificate.integrity_hash}</code></dd></div></dl>{certificate.anchored_at && certificate.anchor_network ? <p className="academy-anchor-proof">Âncora registada em {certificate.anchor_network}{certificate.anchor_tx_hash ? ` · Transacção ${certificate.anchor_tx_hash}` : ""}.</p> : <p className="academy-anchor-proof">Não existe uma âncora blockchain associada a este certificado.</p>}</> : <p className="academy-verify-status">Confirme o QR Code ou o código de referência. Não foi encontrado um certificado com este código.</p>}<p className="academy-verify-footnote">Esta página confirma a emissão e a integridade do registo pela OkutiAcademy. A validação não representa, por si só, acreditação governamental, equivalência académica ou reconhecimento automático por terceiros.</p></section><footer className="academy-verify-footer">OkutiAcademy · Verificação independente do certificado</footer></main>;
+}
