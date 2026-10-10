@@ -3,6 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getValidSupabaseUrl } from "./lib/supabase-url";
 
 export async function middleware(request: NextRequest) {
+  const hostname = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.hostname).split(",")[0].split(":")[0].trim().toLowerCase();
+  const isAcademyHostRoot = hostname === "academy.okutijobs.com" && request.nextUrl.pathname === "/";
+  if (isAcademyHostRoot) {
+    const academyUrl = request.nextUrl.clone();
+    academyUrl.pathname = "/academy";
+    return NextResponse.redirect(academyUrl);
+  }
   const isCrmHostRoot = request.nextUrl.hostname.toLowerCase() === "crm.okutijobs.com" && request.nextUrl.pathname === "/";
   const crmRewrite = isCrmHostRoot ? request.nextUrl.clone() : null;
   if (crmRewrite) crmRewrite.pathname = "/crm";
