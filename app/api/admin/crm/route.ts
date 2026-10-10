@@ -1,5 +1,7 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { CRM_PASSWORD_COOKIE_NAME, verifyCrmPasswordSessionToken } from "@/lib/supabase/crm-password-session";
 import { isOkutiCrmEmail } from "@/lib/supabase/crm-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -10,6 +12,11 @@ async function getCrmApiContext() {
   if (!auth.user) return { response: NextResponse.json({ error: "unauthorized" }, { status: 401 }) } as const;
   if (!auth.user.email_confirmed_at || !isOkutiCrmEmail(auth.user.email)) {
     return { response: NextResponse.json({ error: "crm_email_required" }, { status: 403 }) } as const;
+  }
+  const cookieStore = await cookies();
+  const token = cookieStore.get(CRM_PASSWORD_COOKIE_NAME)?.value;
+  if (!verifyCrmPasswordSessionToken(token, auth.user.id, process.env.CRM_SHARED_ACCESS_PASSWORD)) {
+    return { response: NextResponse.json({ error: "crm_password_required" }, { status: 401 }) } as const;
   }
   const admin = createSupabaseAdminClient();
   if (!admin) return { response: NextResponse.json({ error: "configuration" }, { status: 500 }) } as const;
