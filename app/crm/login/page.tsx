@@ -19,7 +19,7 @@ export default async function CrmLoginPage({ searchParams }: CrmLoginPageProps) 
       <div className="admin-login-icon" aria-hidden="true">@</div>
       <p className="eyebrow">Área interna · acesso em dois passos</p>
       <h1>Entrar no CRM.</h1>
-      <p className="admin-login-lede">Confirme o seu email individual @okutijobs.com com um código OTP de seis dígitos e, em seguida, introduza a senha comum interna para abrir o pipeline comercial.</p>
+      <p className="admin-login-lede">Confirme o seu email individual @okutijobs.com com um código OTP de oito dígitos e, em seguida, introduza a senha comum interna para abrir o pipeline comercial.</p>
       <CrmEmailOtpForm initialError={initialError} />
       <Link className="admin-login-back" href="https://okutijobs.com">← Voltar ao site OkutiJobs</Link>
     </section>
