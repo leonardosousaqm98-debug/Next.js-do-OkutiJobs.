@@ -21,10 +21,47 @@ export async function GET() {
   if ("response" in context) return context.response;
   const [{ data: stages, error: stageError }, { data: deals, error: dealError }] = await Promise.all([
     context.admin.from("crm_pipeline_stages").select("id,name,position,color").order("position"),
-    context.admin.from("crm_deals").select("id,title,source,estimated_value,currency,description,updated_at,stage_id,company:crm_companies(id,name,industry,province,municipality),contact:crm_contacts(full_name,email,phone)").order("updated_at", { ascending: false }).limit(300),
+    context.admin.from("crm_deals").select("id,title,source,estimated_value,currency,description,updated_at,stage_id,crm_company_id").order("updated_at", { ascending: false }).limit(300),
   ]);
   if (stageError || dealError) return NextResponse.json({ error: "Não foi possível carregar os dados do CRM." }, { status: 503 });
-  return NextResponse.json({ stages: stages ?? [], deals: deals ?? [] }, { headers: { "Cache-Control": "private, no-store, max-age=0" } });
+
+  const dealRows = deals ?? [];
+  const companyIds = [...new Set(dealRows.map((deal) => deal.crm_company_id).filter((id): id is string => Boolean(id)))];
+  let companies: Array<{ id: string; name: string; industry: string | null; province: string | null; municipality: string | null }> = [];
+  let contacts: Array<{ crm_company_id: string; full_name: string | null; email: string | null; phone: string | null }> = [];
+  if (companyIds.length) {
+    const [companyResult, contactResult] = await Promise.all([
+      context.admin.from("crm_companies").select("id,name,industry,province,municipality").in("id", companyIds),
+      context.admin.from("crm_contacts").select("crm_company_id,full_name,email,phone").in("crm_company_id", companyIds).eq("is_primary", true).order("created_at", { ascending: true }),
+    ]);
+    if (companyResult.error || contactResult.error) return NextResponse.json({ error: "Não foi possível carregar os dados do CRM." }, { status: 503 });
+    companies = companyResult.data ?? [];
+    contacts = contactResult.data ?? [];
+  }
+
+  const companyById = new Map(companies.map((company) => [company.id, {
+    id: company.id,
+    name: company.name,
+    industry: company.industry ?? undefined,
+    province: company.province ?? undefined,
+    municipality: company.municipality ?? undefined,
+  }]));
+  const contactByCompany = new Map<string, { full_name?: string; email?: string; phone?: string }>();
+  for (const contact of contacts) {
+    if (!contactByCompany.has(contact.crm_company_id)) {
+      contactByCompany.set(contact.crm_company_id, {
+        full_name: contact.full_name ?? undefined,
+        email: contact.email ?? undefined,
+        phone: contact.phone ?? undefined,
+      });
+    }
+  }
+  const dealsWithDetails = dealRows.map(({ crm_company_id: companyId, ...deal }) => ({
+    ...deal,
+    company: companyById.get(companyId) ?? null,
+    contact: contactByCompany.get(companyId) ?? null,
+  }));
+  return NextResponse.json({ stages: stages ?? [], deals: dealsWithDetails }, { headers: { "Cache-Control": "private, no-store, max-age=0" } });
 }
 
 export async function PATCH(request: Request) {
