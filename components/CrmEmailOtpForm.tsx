@@ -42,7 +42,7 @@ export function CrmEmailOtpForm({ initialError = "" }: { initialError?: string }
       setEmail(normalizedEmail);
       setCode("");
       setStep("code");
-      setMessage(`Enviámos um código de seis dígitos para ${normalizedEmail}.`);
+      setMessage(`Enviámos um código de oito dígitos para ${normalizedEmail}.`);
     } catch {
       setError("Não foi possível enviar o código agora. Aguarde um momento e tente novamente.");
     } finally {
@@ -53,9 +53,9 @@ export function CrmEmailOtpForm({ initialError = "" }: { initialError?: string }
   async function confirmCode() {
     setError("");
     setMessage("");
-    const normalizedCode = code.replace(/\D/g, "").slice(0, 6);
-    if (normalizedCode.length !== 6) {
-      setError("Introduza o código de seis dígitos recebido por email.");
+    const normalizedCode = code.replace(/\D/g, "").slice(0, 8);
+    if (normalizedCode.length !== 8) {
+      setError("Introduza o código de oito dígitos recebido por email.");
       return;
     }
     const supabase = createSupabaseBrowserClient();
@@ -138,8 +138,8 @@ export function CrmEmailOtpForm({ initialError = "" }: { initialError?: string }
 
     {step === "code" ? <>
       <label>
-        <span>Código OTP de seis dígitos</span>
-        <input type="text" name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" required />
+        <span>Código OTP de oito dígitos</span>
+        <input type="text" name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{8}" maxLength={8} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 8))} placeholder="00000000" required />
       </label>
       <button className="admin-login-secondary" type="button" onClick={() => void requestCode(email)} disabled={busy}>Reenviar código</button>
       <button className="admin-login-secondary" type="button" onClick={() => { setStep("email"); setCode(""); setError(""); setMessage(""); }} disabled={busy}>Alterar endereço de email</button>
