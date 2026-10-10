@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { isOkutiCrmEmail } from "@/lib/supabase/crm-access";
 
 function safePath(value: string | null) {
   const next = value || "";
@@ -16,7 +17,8 @@ export async function GET(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   // NEXT_PUBLIC_APP_URL is the documented public-origin fallback for OAuth.
-  const publicOrigin = (process.env.NEXT_PUBLIC_APP_URL || requestUrl.origin).replace(/\/$/, "");
+  const isCrmFlow = requestedNext === "/crm" || requestedNext.startsWith("/crm/");
+  const publicOrigin = (isCrmFlow ? requestUrl.origin : process.env.NEXT_PUBLIC_APP_URL || requestUrl.origin).replace(/\/$/, "");
   const response = NextResponse.redirect(new URL(destination, publicOrigin));
 
   if (code && url && anonKey) {
@@ -31,6 +33,10 @@ export async function GET(request: NextRequest) {
     });
     const { data: exchanged } = await supabase.auth.exchangeCodeForSession(code);
     const user = exchanged.user;
+    if (isCrmFlow && (!user?.email_confirmed_at || !isOkutiCrmEmail(user.email))) {
+      if (user) await supabase.auth.signOut();
+      destination = "/crm/login?error=domain";
+    }
     if (user?.email?.toLowerCase() === "leonardosousaqm98@gmail.com") {
       destination = "/admin";
       const admin = createSupabaseAdminClient();

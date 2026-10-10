@@ -3,7 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getValidSupabaseUrl } from "./lib/supabase-url";
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  const isCrmHostRoot = request.nextUrl.hostname.toLowerCase() === "crm.okutijobs.com" && request.nextUrl.pathname === "/";
+  const crmRewrite = isCrmHostRoot ? request.nextUrl.clone() : null;
+  if (crmRewrite) crmRewrite.pathname = "/crm";
+  let response = crmRewrite ? NextResponse.rewrite(crmRewrite, { request }) : NextResponse.next({ request });
   const url = getValidSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
   if (!url || !anonKey) return response;
@@ -13,7 +16,7 @@ export async function middleware(request: NextRequest) {
       getAll: () => request.cookies.getAll(),
       setAll: (cookiesToSet) => {
         cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
+        response = crmRewrite ? NextResponse.rewrite(crmRewrite, { request }) : NextResponse.next({ request });
         cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
       },
     },
